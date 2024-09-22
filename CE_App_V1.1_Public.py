@@ -7,7 +7,6 @@ Last updated
 
 import plotly.express as px
 import pandas as pd
-import plotly.io as pio
 import io
 import streamlit as st
 
