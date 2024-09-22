@@ -165,7 +165,8 @@ def SH_Travel(DemandLever, DemandSpeed, DemandStart,
 
 def Domestic_Travel(DemandLever, DemandSpeed, DemandStart,
                                     ClassLever, ClassSpeed, ClassStart, EmF):
-    Data = pd.read_excel(r"C:\Users\sohqi\Documents\CE_Aviation_Calculator\CE_Data.xlsx", sheet_name='Domestic')
+    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
+    Data = pd.read_excel(Data_URL, sheet_name='Domestic')
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
     
