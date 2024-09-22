@@ -57,7 +57,7 @@ def Travel_EmissionFactors():
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/TravelEmissionFactors_2019Start.csv'
     response = requests.get(Data_URL)
     if response.status_code == 200:
-        Data = pd.read_csv(StringIO(response.text))
+        Data = pd.read_csv(io.StringIO(response.text))
     else:
         print('EmF Data Not loaded')
     # Data = pd.read_csv(Data_URL)
@@ -92,10 +92,10 @@ def Travel_EmissionFactors():
 
 def LH_Travel(DemandLever, DemandSpeed, DemandStart, 
               ClassLever, ClassSpeed, ClassStart, EmF,):
-    Data_URL = "https://raw.githubusercontent.com/sohqy/CE_Aviation/blob/main/CE_Data_Public.xlsx"
+    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     response = requests.get(Data_URL)
     if response.status_code == 200:
-        Data = pd.read_excel(StringIO(response.text), sheet_name = 'LongHaul')
+        Data = pd.read_excel(io.StringIO(response.text), sheet_name = 'LongHaul')
     else:
         print('Travel data not loaded')
     # Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
