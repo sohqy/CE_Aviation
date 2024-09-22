@@ -54,7 +54,10 @@ Dom_Share_AmbLevels = {
 
 def Travel_EmissionFactors():
     Data_URL = "https://raw.githubusercontent.com/sohqy/CE_Aviation/blob/main/TravelEmissionFactors_2019Start.csv"
-    Data = pd.read_csv(Data_URL)
+    response = requests.get(Data_URL)
+    if response.status_code == 200:
+        Data = pd.read_csv(StringIO(response.text))
+    # Data = pd.read_csv(Data_URL)
     Data, BaU_ROC = gf.CleanData(Data)
 
     Categories = list(Data.columns)
@@ -87,7 +90,10 @@ def Travel_EmissionFactors():
 def LH_Travel(DemandLever, DemandSpeed, DemandStart, 
               ClassLever, ClassSpeed, ClassStart, EmF,):
     Data_URL = "https://raw.githubusercontent.com/sohqy/CE_Aviation/blob/main/CE_Data_Public.xlsx"
-    Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
+    response = requests.get(Data_URL)
+    if response.status_code == 200:
+        Data = pd.read_excel(StringIO(response.text), sheet_name = 'LongHaul')
+    # Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
     
