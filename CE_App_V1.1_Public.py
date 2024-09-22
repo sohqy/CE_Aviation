@@ -183,13 +183,17 @@ def Figure_ShortHaul_Classes(SH_Emissions):
                  labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3],) 
     return fig
 
-def Figure_Total_Overview(LH_Emissions):
+def Figure_Total_Overview(LH_Emissions, SH_Emissions):
     
     LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
     LH_Total = LHAviationEmissions.sum(axis = 1) / 1000
     LH_Total.rename('Long haul travel', inplace=True)
 
-    TotalEmissions = LH_Total #+ SH_Total + Dom_Total
+    SHAviationEmissions = pd.read_json(io.StringIO(SH_Emissions), orient = 'split')
+    SH_Total = SHAviationEmissions.sum(axis = 1) / 1000
+    SH_Total.rename('Short haul travel', inplace=True)
+
+    TotalEmissions = LH_Total + SH_Total #+ Dom_Total
     TotalEmissions.rename('Total aviation emissions', inplace=True)
     Cumulative_Emissions = TotalEmissions.cumsum()
 
@@ -245,6 +249,7 @@ with Body_Column:
     Overview_Page.plotly_chart(Figure_Cumulative)
 
     Details_Page.plotly_chart(Figure_LH)
+    Details_Page.plotly_chart(Figure_SH)
 
 Summary_Column.write('Lever selection summary here')
 # %%
