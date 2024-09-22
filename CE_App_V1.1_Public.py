@@ -10,11 +10,13 @@ import pandas as pd
 import io
 import streamlit as st
 import requests
-
+import plotly.io as pio
 import GeneralisedFunctions as gf
+import Graph_Themes
 
 CalculatorTime_Range = list(range(2019, 2051))
 
+pio.templates.default = "NZ_Calc"
 
 #%% Ambition levels - parameter setting 
 
@@ -261,7 +263,7 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
         line_color="#ff8c00",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="#ff8c00" )
     fig.add_hline(y = 0.75 * Baseline_Emission, line_width = 2, line_color = '#008080', annotation_font_color="#008080",  
                   annotation_text="2026 Emissions target (25% reduction)", line_dash = 'dot')
-    
+    fig.add_vline(x=2023, line_width=2, line_dash="dash", line_color="#0000cd")
     return fig, fig_Cumulative
 
 
