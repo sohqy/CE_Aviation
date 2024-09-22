@@ -9,6 +9,7 @@ import plotly.express as px
 import pandas as pd
 import io
 import streamlit as st
+import requests
 
 import GeneralisedFunctions as gf
 
