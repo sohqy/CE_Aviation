@@ -58,6 +58,8 @@ def Travel_EmissionFactors():
     response = requests.get(Data_URL)
     if response.status_code == 200:
         Data = pd.read_csv(StringIO(response.text))
+    else:
+        print('EmF Data Not loaded')
     # Data = pd.read_csv(Data_URL)
     Data, BaU_ROC = gf.CleanData(Data)
 
@@ -94,6 +96,8 @@ def LH_Travel(DemandLever, DemandSpeed, DemandStart,
     response = requests.get(Data_URL)
     if response.status_code == 200:
         Data = pd.read_excel(StringIO(response.text), sheet_name = 'LongHaul')
+    else:
+        print('Travel data not loaded')
     # Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
