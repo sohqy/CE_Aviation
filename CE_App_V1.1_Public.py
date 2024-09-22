@@ -221,7 +221,7 @@ st.write('Hello, an introduction here would be nice.')
 # ---------- Control side panel
 st.sidebar.write('## Control panel')
 st.sidebar.write('### How to use')
-st.divider
+st.divider()
 
 # Long haul parameters
 LH_Demand_Lever = st.sidebar.slider(label = 'Long Haul Travel Demand', min_value = 1, max_value = 4,value = 1)
@@ -238,8 +238,8 @@ LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_
 SH_Data = SH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF)
 
 # ---------- Generate figures
+Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data)
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
-Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data)
 Figure_SH = Figure_ShortHaul_Classes(SH_Data)
 
 Body_Column, Summary_Column = st.columns([0.6, 0.4], gap = 'medium')
