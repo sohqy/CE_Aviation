@@ -202,7 +202,7 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions):
 
     Baseline_Emission = TotalEmissions.loc[2022]
 
-    Totals = pd.DataFrame({'Long Haul': LH_Total, }) #'Short Haul': SH_Total, 'Domestic':Dom_Total })
+    Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, }) #'Domestic':Dom_Total })
     fig = px.area(Totals, range_y=[-1,1.15e3], labels = {'value':'Emissions (tCO2e)'})
     fig.add_traces(px.line(TotalEmissions, markers=True, color_discrete_sequence= ['black']).data)
     fig.add_hline(y=Baseline_Emission, line_width=2, line_dash="dash", 
@@ -221,7 +221,7 @@ st.write('Hello, an introduction here would be nice.')
 # ---------- Control side panel
 st.sidebar.write('## Control panel')
 st.sidebar.write('### How to use')
-st.divider()
+st.sidebar.divider()
 
 # Long haul parameters
 LH_Demand_Lever = st.sidebar.slider(label = 'Long Haul Travel Demand', min_value = 1, max_value = 4,value = 1)
@@ -230,7 +230,7 @@ LH_Demand_Start = st.sidebar.number_input(label = 'Long haul demand start', min_
 LH_Class_Lever = st.sidebar.slider(label = 'Long Haul Travel Class', min_value = 1, max_value = 4,value = 1)
 LH_Class_Speed = st.sidebar.number_input(label = 'Long haul class speed', min_value = 1, max_value = 40, value=2)
 LH_Class_Start = st.sidebar.number_input(label = 'Long haul class start', min_value = 2024, max_value = 2050, value=2024)
-st.divider()
+st.sidebar.divider()
 
 # ---------- Generate data 
 EmF = Travel_EmissionFactors()
