@@ -127,6 +127,8 @@ def LH_Travel(DemandLever, DemandSpeed, DemandStart,
     
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
+#%% FIGURE GENERATORS
+
 def Figure_LongHaul_Classes(LH_Emissions):
     LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
     Categories = list(LHAviationEmissions.columns)
@@ -136,8 +138,33 @@ def Figure_LongHaul_Classes(LH_Emissions):
                  labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,8.1e5],) 
     return fig
 
+def Figure_Total_Overview(LH_Emissions):
+    
+    LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
+    LH_Total = LHAviationEmissions.sum(axis = 1) / 1000
+    LH_Total.rename('Long haul travel', inplace=True)
 
-#%% 
+    TotalEmissions = LH_Total #+ SH_Total + Dom_Total
+    TotalEmissions.rename('Total aviation emissions', inplace=True)
+    Cumulative_Emissions = TotalEmissions.cumsum()
+
+    fig_Cumulative = px.area(Cumulative_Emissions, 
+                  labels = {'value':'Cumulative Emissions (tCO2e)'}, range_y=[-1,2.5e4])
+
+    Baseline_Emission = TotalEmissions.loc[2022]
+
+    Totals = pd.DataFrame({'Long Haul': LH_Total, }) #'Short Haul': SH_Total, 'Domestic':Dom_Total })
+    fig = px.area(Totals, range_y=[-1,1.15e3], labels = {'value':'Emissions (tCO2e)'})
+    fig.add_traces(px.line(TotalEmissions, markers=True, color_discrete_sequence= ['black']).data)
+    fig.add_hline(y=Baseline_Emission, line_width=2, line_dash="dash", 
+        line_color="blue",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="blue" )
+    fig.add_hline(y = 0.75 * Baseline_Emission, line_width = 2, line_color = 'green', annotation_font_color="green",  
+                  annotation_text="2026 Emissions target (25% reduction)", line_dash = 'dot')
+    
+    return fig, fig_Cumulative
+
+
+#%% Application
 st.set_page_config(layout="wide")
 st.title('Chemical Engineering Aviation Emissions')
 st.write('Hello this is a page.')
@@ -151,11 +178,15 @@ LH_Demand_Start = st.sidebar.number_input(label = 'Long haul demand start', min_
 EmF = Travel_EmissionFactors()
 LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Demand_Lever, 2, 2024, EmF)
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
+Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data)
 
 Body_Column, Summary_Column = st.columns([0.6, 0.4], gap = 'medium')
 with Body_Column:
-    Overview_Page, Detail_Page = st.tabs(["Overview", "Breakdowns"])
-    Overview_Page.plotly_chart(Figure_LH)
+    Overview_Page, Details_Page = st.tabs(["Overview", "Breakdowns"])
+    Overview_Page.plotly_chart(Figure_Emissions)
+    Overview_Page.plotly_chart(Figure_Cumulative)
+
+    Details_Page.plotly_chart(Figure_LH)
 
 Summary_Column.write('Lever selection summary here')
 # %%
