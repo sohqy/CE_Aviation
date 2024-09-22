@@ -54,7 +54,7 @@ Dom_Share_AmbLevels = {
 #%%
 
 def Travel_EmissionFactors():
-    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/blob/main/TravelEmissionFactors_2019Start.csv'
+    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/TravelEmissionFactors_2019Start.csv'
     response = requests.get(Data_URL)
     if response.status_code == 200:
         Data = pd.read_csv(StringIO(response.text))
