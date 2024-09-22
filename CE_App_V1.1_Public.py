@@ -93,12 +93,7 @@ def Travel_EmissionFactors():
 def LH_Travel(DemandLever, DemandSpeed, DemandStart, 
               ClassLever, ClassSpeed, ClassStart, EmF,):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
-    response = requests.get(Data_URL)
-    if response.status_code == 200:
-        Data = pd.read_excel(io.StringIO(response.text), sheet_name = 'LongHaul')
-    else:
-        print('Travel data not loaded')
-    # Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
+    Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
     
