@@ -213,6 +213,46 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions):
     return fig, fig_Cumulative
 
 
+#%% Summary generators
+def Return_Selected_Ambitions(AmbitionLevel_Definitions, AmbitionLevel):
+    if 1 in AmbitionLevel_Definitions:  # Demand ambitions
+        SelectedLevel = (AmbitionLevel_Definitions[AmbitionLevel] - 1) * 100
+    else:
+        SelectedLevel = {}
+        for category in AmbitionLevel_Definitions.keys():
+            SelectedLevel[category] = AmbitionLevel_Definitions[category][AmbitionLevel]
+    return SelectedLevel
+
+def Changes_Text(SelectedLevel):
+    if SelectedLevel > 0:
+        Text = 'increases'
+    else:
+        Text = 'decreases'
+    return Text
+
+def Generate_Lever_Summary(LongHaul_Demand, ShortHaul_Demand, Domestic_Demand,
+                           LongHaul_Share, ShortHaul_Share, Domestic_Share,):
+    LH_DemandSelection = Return_Selected_Ambitions(LH_Demand_AmbLevels, LongHaul_Demand)
+    SH_DemandSelection = Return_Selected_Ambitions(SH_Demand_AmbLevels, ShortHaul_Demand)
+    Dom_DemandSelection = Return_Selected_Ambitions(LH_Demand_AmbLevels, Domestic_Demand)
+
+    LH_ShareSelection = Return_Selected_Ambitions(LH_Share_AmbLevels, LongHaul_Share)
+
+    SH_ShareSelection = Return_Selected_Ambitions(SH_Share_AmbLevels, ShortHaul_Share)
+    Dom_ShareSelection = Return_Selected_Ambitions(LH_Share_AmbLevels, Domestic_Share)
+
+    Summary = ' ### Lever selection summary \n\n' 
+    Summary += 'Long haul demand {} by {:.2f}% \n\n'.format(Changes_Text(LH_DemandSelection), abs(LH_DemandSelection))
+    Summary += 'Short haul demand {} by {:.2f}% \n\n'.format( Changes_Text(SH_DemandSelection), abs(SH_DemandSelection))
+    Summary += 'Domestic demand {} by {:.2f}% \n\n'.format(Changes_Text(Dom_DemandSelection),abs(Dom_DemandSelection) )
+
+    Summary += '**Long haul travel class shares** \n\n' + '\n\n'.join('{}: {:.1f}%'.format(k,v*100) for k, v in LH_ShareSelection.items())
+    Summary += '\n\n**Short haul travel class shares** \n\n' + '\n\n'.join('{}: {:.1f}%'.format(k,v*100) for k, v in SH_ShareSelection.items())
+    Summary += '\n\n**Domestic travel class shares** \n\n' + '\n\n'.join('{}: {:.1f}%'.format(k,v*100) for k, v in Dom_ShareSelection.items())
+
+    return Summary 
+
+
 #%% Application
 st.set_page_config(layout="wide")
 st.title('Chemical Engineering Aviation Emissions')
@@ -251,5 +291,6 @@ with Body_Column:
     Details_Page.plotly_chart(Figure_LH)
     Details_Page.plotly_chart(Figure_SH)
 
-Summary_Column.write('Lever selection summary here')
+Summary_Column.write(Generate_Lever_Summary(LH_Demand_Lever, LH_Demand_Lever, LH_Demand_Lever,
+                                            LH_Class_Lever, LH_Class_Lever, LH_Class_Lever))
 # %%
