@@ -163,6 +163,8 @@ def SH_Travel(DemandLever, DemandSpeed, DemandStart,
     
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
+
+
 #%% FIGURE GENERATORS
 
 def Figure_LongHaul_Classes(LH_Emissions):
@@ -264,7 +266,7 @@ st.sidebar.write('### How to use')
 st.sidebar.divider()
 
 # Long haul parameters
-LH_Demand_Lever = st.sidebar.slider(label = 'Long Haul Travel Demand', min_value = 1, max_value = 4,value = 1)
+LH_Demand_Lever = st.sidebar.slider(label = 'Long haul Travel Demand', min_value = 1, max_value = 4,value = 1)
 LH_Demand_Speed = st.sidebar.number_input(label = 'Long haul demand speed', min_value = 1, max_value = 40, value=2)
 LH_Demand_Start = st.sidebar.number_input(label = 'Long haul demand start', min_value = 2024, max_value = 2050, value=2024)
 LH_Class_Lever = st.sidebar.slider(label = 'Long Haul Travel Class', min_value = 1, max_value = 4,value = 1)
@@ -272,17 +274,34 @@ LH_Class_Speed = st.sidebar.number_input(label = 'Long haul class speed', min_va
 LH_Class_Start = st.sidebar.number_input(label = 'Long haul class start', min_value = 2024, max_value = 2050, value=2024)
 st.sidebar.divider()
 
+# Short haul parameters
+SH_Demand_Lever = st.sidebar.slider(label = 'Short haul Travel Demand', min_value = 1, max_value = 4,value = 1)
+SH_Demand_Speed = st.sidebar.number_input(label = 'Short haul demand speed', min_value = 1, max_value = 40, value=2)
+SH_Demand_Start = st.sidebar.number_input(label = 'Short haul demand start', min_value = 2024, max_value = 2050, value=2024)
+SH_Class_Lever = st.sidebar.slider(label = 'Short Haul Travel Class', min_value = 1, max_value = 4,value = 1)
+SH_Class_Speed = st.sidebar.number_input(label = 'Short haul class speed', min_value = 1, max_value = 40, value=2)
+SH_Class_Start = st.sidebar.number_input(label = 'Short haul class start', min_value = 2024, max_value = 2050, value=2024)
+st.sidebar.divider()
+
+# Domestic parameters
+DOM_Demand_Lever = st.sidebar.slider(label = 'Domestic Travel Demand', min_value = 1, max_value = 4,value = 1)
+DOM_Demand_Speed = st.sidebar.number_input(label = 'Domestic demand speed', min_value = 1, max_value = 40, value=2)
+DOM_Demand_Start = st.sidebar.number_input(label = 'Domestic demand start', min_value = 2024, max_value = 2050, value=2024)
+DOM_Class_Lever = st.sidebar.slider(label = 'Domestic Travel Class', min_value = 1, max_value = 4,value = 1)
+DOM_Class_Speed = st.sidebar.number_input(label = 'Domestic class speed', min_value = 1, max_value = 40, value=2)
+DOM_Class_Start = st.sidebar.number_input(label = 'Domestic class start', min_value = 2024, max_value = 2050, value=2024)
+
 # ---------- Generate data 
 EmF = Travel_EmissionFactors()
 LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF)
-SH_Data = SH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF)
+SH_Data = SH_Travel(SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF)
 
 # ---------- Generate figures
 Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data)
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
 Figure_SH = Figure_ShortHaul_Classes(SH_Data)
 
-Body_Column, Summary_Column = st.columns([0.6, 0.4], gap = 'medium')
+Body_Column, Summary_Column = st.columns([0.6, 0.4], gap = 'large')
 with Body_Column:
     Overview_Page, Details_Page = st.tabs(["Overview", "Breakdowns"])
     Overview_Page.plotly_chart(Figure_Emissions)
