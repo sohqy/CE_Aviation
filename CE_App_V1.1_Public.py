@@ -163,6 +163,41 @@ def SH_Travel(DemandLever, DemandSpeed, DemandStart,
     
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
+def Domestic_Travel(DemandLever, DemandSpeed, DemandStart,
+                                    ClassLever, ClassSpeed, ClassStart, EmF):
+    Data = pd.read_excel(r"C:\Users\sohqi\Documents\CE_Aviation_Calculator\CE_Data.xlsx", sheet_name='Domestic')
+    Data, BaU_ROC = gf.CleanData(Data)
+    Data_Shares = gf.Shares(Data)
+    
+    EmFactors = pd.read_json(io.StringIO(EmF), orient = 'split')
+    ProjectedChanges = pd.DataFrame({'Year':CalculatorTime_Range})
+
+    BaU_Demand = gf.BaU_Pathways(Data_Shares, 'Total')          # Unit demand.
+    gf.Projections(BaU_Demand, 'Total', Dom_Demand_AmbLevels, 
+                   DemandLever, DemandSpeed, DemandStart, ProjectedChanges, BaseYear=2022,)
+    
+    ProjectedDemand = pd.DataFrame({'Year':CalculatorTime_Range})
+    ProjectedDemand['Total'] = ProjectedChanges['Total']
+
+    ProjectedShares = pd.DataFrame({'Year':CalculatorTime_Range})
+
+    Categories = list(Data_Shares.columns)
+    Categories.remove('Total')
+
+    # ---------- Determine activity by mode and engine
+    ActivityByMode = pd.DataFrame({'Year':CalculatorTime_Range})
+    Activity_ModeEngine = pd.DataFrame({'Year':CalculatorTime_Range})
+    for Category in Categories:
+        BaUData = gf.BaU_Pathways(Data_Shares, Category)
+        gf.Projections(BaUData, Category, Dom_Share_AmbLevels[Category], ClassLever, ClassSpeed, ClassStart, 
+                       ProjectedShares, AmbitionsMode='Absolute', BaseYear=2022, )
+        ActivityByMode[Category] = ProjectedDemand['Total'] * ProjectedShares[Category]
+    Activity_ModeEngine.set_index('Year', inplace = True)
+    ActivityByMode.set_index('Year', inplace = True)
+
+    AllEmissions = gf.Aviation_Emissions(Categories, 'lH', EmFactors, ActivityByMode)
+    
+    return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
 
 #%% FIGURE GENERATORS
@@ -185,7 +220,17 @@ def Figure_ShortHaul_Classes(SH_Emissions):
                  labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3],) 
     return fig
 
-def Figure_Total_Overview(LH_Emissions, SH_Emissions):
+def Figure_Domestic_Classes(Dom_Emissions):
+    DomAviationEmissions = pd.read_json(io.StringIO(Dom_Emissions), orient = 'split')
+    Categories = list(DomAviationEmissions.columns)
+
+    fig = px.line(DomAviationEmissions, y = Categories, 
+                  title = 'Domestic aviation emissions',
+                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3],) 
+    return fig
+
+
+def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
     
     LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
     LH_Total = LHAviationEmissions.sum(axis = 1) / 1000
@@ -195,7 +240,11 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions):
     SH_Total = SHAviationEmissions.sum(axis = 1) / 1000
     SH_Total.rename('Short haul travel', inplace=True)
 
-    TotalEmissions = LH_Total + SH_Total #+ Dom_Total
+    DomAviationEmissions = pd.read_json(io.StringIO(DOM_Emissions), orient = 'split')
+    Dom_Total = DomAviationEmissions.sum(axis = 1) / 1000
+    Dom_Total.rename('Short haul travel', inplace=True)
+
+    TotalEmissions = LH_Total + SH_Total + Dom_Total
     TotalEmissions.rename('Total aviation emissions', inplace=True)
     Cumulative_Emissions = TotalEmissions.cumsum()
 
@@ -204,12 +253,12 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions):
 
     Baseline_Emission = TotalEmissions.loc[2022]
 
-    Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, }) #'Domestic':Dom_Total })
-    fig = px.area(Totals, range_y=[-1,1.15e3], labels = {'value':'Emissions (tCO2e)'})
+    Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, 'Domestic':Dom_Total })
+    fig = px.area(Totals, range_y=[-1, 900], labels = {'value':'Emissions (tCO2e)'})
     fig.add_traces(px.line(TotalEmissions, markers=True, color_discrete_sequence= ['black']).data)
     fig.add_hline(y=Baseline_Emission, line_width=2, line_dash="dash", 
-        line_color="blue",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="blue" )
-    fig.add_hline(y = 0.75 * Baseline_Emission, line_width = 2, line_color = 'green', annotation_font_color="green",  
+        line_color="#ff8c00",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="#ff8c00" )
+    fig.add_hline(y = 0.75 * Baseline_Emission, line_width = 2, line_color = '#008080', annotation_font_color="#008080",  
                   annotation_text="2026 Emissions target (25% reduction)", line_dash = 'dot')
     
     return fig, fig_Cumulative
@@ -263,6 +312,7 @@ st.write('Hello, an introduction here would be nice.')
 # ---------- Control side panel
 st.sidebar.write('## Control panel')
 st.sidebar.write('### How to use')
+st.sidebar.write('A brief description on how to use this tool.')
 st.sidebar.divider()
 
 # Long haul parameters
@@ -295,21 +345,25 @@ DOM_Class_Start = st.sidebar.number_input(label = 'Domestic class start', min_va
 EmF = Travel_EmissionFactors()
 LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF)
 SH_Data = SH_Travel(SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF)
+DOM_Data = Domestic_Travel(DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF)
+
 
 # ---------- Generate figures
 Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data)
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
 Figure_SH = Figure_ShortHaul_Classes(SH_Data)
+Figure_DOM = Figure_Domestic_Classes(DOM_Data)
 
-Body_Column, Summary_Column = st.columns([0.6, 0.4], gap = 'large')
+Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
 with Body_Column:
     Overview_Page, Details_Page = st.tabs(["Overview", "Breakdowns"])
-    Overview_Page.plotly_chart(Figure_Emissions)
-    Overview_Page.plotly_chart(Figure_Cumulative)
+    Overview_Page.plotly_chart(Figure_Emissions, theme = None)
+    Overview_Page.plotly_chart(Figure_Cumulative, theme = None)
 
-    Details_Page.plotly_chart(Figure_LH)
-    Details_Page.plotly_chart(Figure_SH)
+    Details_Page.plotly_chart(Figure_LH, theme = None)
+    Details_Page.plotly_chart(Figure_SH, theme = None)
+    Details_Page.plotly_chart(Figure_DOM, theme = None)
 
-Summary_Column.write(Generate_Lever_Summary(LH_Demand_Lever, LH_Demand_Lever, LH_Demand_Lever,
-                                            LH_Class_Lever, LH_Class_Lever, LH_Class_Lever))
+Summary_Column.write(Generate_Lever_Summary(LH_Demand_Lever, SH_Demand_Lever, DOM_Demand_Lever,
+                                            LH_Class_Lever, SH_Class_Lever, DOM_Class_Lever))
 # %%
