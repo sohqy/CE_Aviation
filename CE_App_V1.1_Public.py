@@ -89,7 +89,6 @@ def Travel_EmissionFactors():
 
     return GHG_EmF.to_json(date_format = 'iso', orient = 'split')
 
-
 def LH_Travel(DemandLever, DemandSpeed, DemandStart, 
               ClassLever, ClassSpeed, ClassStart, EmF,):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
@@ -127,6 +126,43 @@ def LH_Travel(DemandLever, DemandSpeed, DemandStart,
     
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
+def SH_Travel(DemandLever, DemandSpeed, DemandStart,
+                                    ClassLever, ClassSpeed, ClassStart, EmF):
+    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
+    Data = pd.read_excel(Data_URL, sheet_name='ShortHaul')
+    Data, BaU_ROC = gf.CleanData(Data)
+    Data_Shares = gf.Shares(Data)
+    
+    EmFactors = pd.read_json(io.StringIO(EmF), orient = 'split')
+    ProjectedChanges = pd.DataFrame({'Year':CalculatorTime_Range})
+
+    BaU_Demand = gf.BaU_Pathways(Data_Shares, 'Total')          # Unit demand.
+    gf.Projections(BaU_Demand, 'Total', SH_Demand_AmbLevels, 
+                   DemandLever, DemandSpeed, DemandStart, ProjectedChanges, BaseYear=2022,)
+    
+    ProjectedDemand = pd.DataFrame({'Year':CalculatorTime_Range})
+    ProjectedDemand['Total'] = ProjectedChanges['Total']
+
+    ProjectedShares = pd.DataFrame({'Year':CalculatorTime_Range})
+
+    Categories = list(Data_Shares.columns)
+    Categories.remove('Total')
+
+    # ---------- Determine activity by mode and engine
+    ActivityByMode = pd.DataFrame({'Year':CalculatorTime_Range})
+    Activity_ModeEngine = pd.DataFrame({'Year':CalculatorTime_Range})
+    for Category in Categories:
+        BaUData = gf.BaU_Pathways(Data_Shares, Category)
+        gf.Projections(BaUData, Category, SH_Share_AmbLevels[Category], ClassLever, ClassSpeed, ClassStart, 
+                       ProjectedShares, AmbitionsMode='Absolute', BaseYear=2022, )
+        ActivityByMode[Category] = ProjectedDemand['Total'] * ProjectedShares[Category]
+    Activity_ModeEngine.set_index('Year', inplace = True)
+    ActivityByMode.set_index('Year', inplace = True)
+
+    AllEmissions = gf.Aviation_Emissions(Categories, 'sH', EmFactors, ActivityByMode)
+    
+    return AllEmissions.to_json(date_format = 'iso', orient = 'split')
+
 #%% FIGURE GENERATORS
 
 def Figure_LongHaul_Classes(LH_Emissions):
@@ -136,6 +172,15 @@ def Figure_LongHaul_Classes(LH_Emissions):
     fig = px.line(LHAviationEmissions, y = Categories, 
                   title = 'Long haul aviation emissions',
                  labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,8.1e5],) 
+    return fig
+
+def Figure_ShortHaul_Classes(SH_Emissions):
+    SHAviationEmissions = pd.read_json(io.StringIO(SH_Emissions), orient = 'split')
+    Categories = list(SHAviationEmissions.columns)
+
+    fig = px.line(SHAviationEmissions, y = Categories, 
+                  title = 'Short haul aviation emissions',
+                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3],) 
     return fig
 
 def Figure_Total_Overview(LH_Emissions):
@@ -167,18 +212,29 @@ def Figure_Total_Overview(LH_Emissions):
 #%% Application
 st.set_page_config(layout="wide")
 st.title('Chemical Engineering Aviation Emissions')
-st.write('Hello this is a page.')
+st.write('Hello, an introduction here would be nice.')
 
-st.sidebar.write('Control panel')
+# ---------- Control side panel
+st.sidebar.write('## Control panel')
+st.sidebar.write('How to use')
+
+# Long haul parameters
 LH_Demand_Lever = st.sidebar.slider(label = 'Long Haul Travel Demand', min_value = 1, max_value = 4,value = 1)
 LH_Demand_Speed = st.sidebar.number_input(label = 'Long haul demand speed', min_value = 1, max_value = 40, value=2)
 LH_Demand_Start = st.sidebar.number_input(label = 'Long haul demand start', min_value = 2024, max_value = 2050, value=2024)
+LH_Class_Lever = st.sidebar.slider(label = 'Long Haul Travel Class', min_value = 1, max_value = 4,value = 1)
+LH_Class_Speed = st.sidebar.number_input(label = 'Long haul class speed', min_value = 1, max_value = 40, value=2)
+LH_Class_Start = st.sidebar.number_input(label = 'Long haul class start', min_value = 2024, max_value = 2050, value=2024)
 
-
+# ---------- Generate data 
 EmF = Travel_EmissionFactors()
-LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Demand_Lever, 2, 2024, EmF)
+LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF)
+
+
+# ---------- Generate figures
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
 Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data)
+Figure_SH = Figure_ShortHaul_Classes(SH_Data)
 
 Body_Column, Summary_Column = st.columns([0.6, 0.4], gap = 'medium')
 with Body_Column:
