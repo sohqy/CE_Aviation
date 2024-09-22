@@ -350,7 +350,7 @@ DOM_Data = Domestic_Travel(DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start,
 
 
 # ---------- Generate figures
-Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data)
+Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data, DOM_Data)
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
 Figure_SH = Figure_ShortHaul_Classes(SH_Data)
 Figure_DOM = Figure_Domestic_Classes(DOM_Data)
