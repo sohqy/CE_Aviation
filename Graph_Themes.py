@@ -3,7 +3,11 @@ import plotly.io as pio
 
 pio.templates["NZ_Calc"] = go.layout.Template(
     layout={
-        'font': {'family': 'arial',
+        'title':{'font': {'family': 'HelveticaNeue-CondensedBold, Helvetica, Sans-serif',
+                      'size': 30,
+                      'color': '#0000cd'}
+            },
+        'font': {'family': 'Helvetica',
                  'size': 14,
                  'color': "#0000cd",
                  },
