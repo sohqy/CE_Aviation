@@ -360,7 +360,7 @@ Figure_DOM = Figure_Domestic_Classes(DOM_Data)
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
 with Body_Column:
     Overview_Page, Details_Page = st.tabs(["Overview", "Breakdowns"])
-    Overview_Page.plotly_chart(Figure_Emissions, theme = 'None')
+    Overview_Page.plotly_chart(Figure_Emissions, theme = None)
     Overview_Page.plotly_chart(Figure_Cumulative, theme = None)
 
     Details_Page.plotly_chart(Figure_LH, theme = None)
