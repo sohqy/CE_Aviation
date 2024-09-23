@@ -11,7 +11,7 @@ pio.templates["NZ_Calc"] = go.layout.Template(
                  'size': 14,
                  'color': "#0000cd",
                  },
-        'colorway': ['#fa8072', '#40e0d0', '#dc143c', '#008080', '#00bfff'],
+        'colorway': ['#0000cd','#fa8072', '#40e0d0', '#dc143c', '#008080', '#00bfff'],
         'plot_bgcolor': '#f5f5f5', 
     }
 )

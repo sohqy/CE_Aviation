@@ -46,11 +46,11 @@ SH_Share_AmbLevels = {
 Dom_Demand_AmbLevels = {1: 0.9, 2: 0.7, 3: 0.5, 4: 0}
 
 Dom_Share_AmbLevels = {
-    'First Class' :             {1: 0.003, 2: 0.001, 3: 0, 4: 0},
-    'Business Class':           {1: 0.07, 2: 0.03, 3: 0.02, 4: 0.01},
-    'Premium Economy Class':    {1: 0.18, 2: 0.218, 3: 0.2, 4: 0.1}, 
-    'Economy Class':            {1: 0.745, 2: 0.75, 3: 0.779, 4: 0.89},
-    'Unknown':                  {1: 0.002, 2: 0.001, 3: 0.001, 4: 0.0},
+    'First Class' :             {1: 0.003, 2: 0.00, 3: 0, 4: 0},
+    'Business Class':           {1: 0.07, 2: 0.03, 3: 0.02, 4: 0.00},
+    'Premium Economy Class':    {1: 0.18, 2: 0.219, 3: 0.2, 4: 0.0}, 
+    'Economy Class':            {1: 0.745, 2: 0.75, 3: 0.78, 4: 1.0},
+    'Unknown':                  {1: 0.002, 2: 0.001, 3: 0.000, 4: 0.0},
 }
 
 #%%
@@ -317,6 +317,8 @@ st.sidebar.write('## Control panel')
 st.sidebar.write('### How to use')
 st.sidebar.write('A brief description on how to use this tool.')
 st.sidebar.divider()
+
+LeakageFactor = st.sidebar.number_input(label = '% of travel captured by Egencia', min_value = 0, max_value = 100, value = 60)
 
 # Long haul parameters
 LH_Demand_Lever = st.sidebar.slider(label = 'Long haul Travel Demand', min_value = 1, max_value = 4,value = 1)
