@@ -324,7 +324,7 @@ st.sidebar.write('### How to use')
 st.sidebar.write('A brief description on how to use this tool.')
 st.sidebar.divider()
 
-LH_Leakage = st.sidebar.number_input(label = '% of Long haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 60)
+LH_Leakage = st.sidebar.number_input(label = '% of Long haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 100)
 
 # Long haul parameters
 LH_Demand_Lever = st.sidebar.slider(label = 'Long haul Travel Demand', min_value = 1, max_value = 4,value = 1)
@@ -336,7 +336,7 @@ LH_Class_Start = st.sidebar.number_input(label = 'Long haul class start', min_va
 st.sidebar.divider()
 
 # Short haul parameters
-SH_Leakage = st.sidebar.number_input(label = '% of short haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 60)
+SH_Leakage = st.sidebar.number_input(label = '% of short haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 100)
 SH_Demand_Lever = st.sidebar.slider(label = 'Short haul Travel Demand', min_value = 1, max_value = 4,value = 1)
 SH_Demand_Speed = st.sidebar.number_input(label = 'Short haul demand speed', min_value = 1, max_value = 40, value=2)
 SH_Demand_Start = st.sidebar.number_input(label = 'Short haul demand start', min_value = 2024, max_value = 2050, value=2024)
@@ -346,7 +346,7 @@ SH_Class_Start = st.sidebar.number_input(label = 'Short haul class start', min_v
 st.sidebar.divider()
 
 # Domestic parameters
-DOM_Leakage = st.sidebar.number_input(label = '% of domestic aviation captured by Egencia', min_value = 0, max_value = 100, value = 60)
+DOM_Leakage = st.sidebar.number_input(label = '% of domestic aviation captured by Egencia', min_value = 0, max_value = 100, value = 100)
 DOM_Demand_Lever = st.sidebar.slider(label = 'Domestic Travel Demand', min_value = 1, max_value = 4,value = 1)
 DOM_Demand_Speed = st.sidebar.number_input(label = 'Domestic demand speed', min_value = 1, max_value = 40, value=2)
 DOM_Demand_Start = st.sidebar.number_input(label = 'Domestic demand start', min_value = 2024, max_value = 2050, value=2024)
