@@ -95,7 +95,7 @@ def LH_Travel(DemandLever, DemandSpeed, DemandStart,
               ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
-    Data_Adj = Data / (LeakageFactor/100)
+    Data_Adj = Data.drop(columns = 'Year') / (LeakageFactor/100)
     Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
@@ -134,7 +134,7 @@ def SH_Travel(DemandLever, DemandSpeed, DemandStart,
                 ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     Data = pd.read_excel(Data_URL, sheet_name='ShortHaul')
-    Data_Adj = Data / (LeakageFactor/100)
+    Data_Adj = Data.drop(columns = 'Year') / (LeakageFactor/100)
     Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
@@ -173,7 +173,7 @@ def Domestic_Travel(DemandLever, DemandSpeed, DemandStart,
                     ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     Data = pd.read_excel(Data_URL, sheet_name='Domestic')
-    Data_Adj = Data / (LeakageFactor/100)
+    Data_Adj = Data.drop(columns = 'Year') / (LeakageFactor/100)
     Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
