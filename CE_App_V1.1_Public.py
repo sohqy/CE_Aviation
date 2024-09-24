@@ -92,9 +92,11 @@ def Travel_EmissionFactors():
     return GHG_EmF.to_json(date_format = 'iso', orient = 'split')
 
 def LH_Travel(DemandLever, DemandSpeed, DemandStart, 
-              ClassLever, ClassSpeed, ClassStart, EmF,):
+              ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
+    Data_Adj = Data / (LeakageFactor/100)
+    Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
     
@@ -129,9 +131,11 @@ def LH_Travel(DemandLever, DemandSpeed, DemandStart,
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
 def SH_Travel(DemandLever, DemandSpeed, DemandStart,
-                                    ClassLever, ClassSpeed, ClassStart, EmF):
+                ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     Data = pd.read_excel(Data_URL, sheet_name='ShortHaul')
+    Data_Adj = Data / (LeakageFactor/100)
+    Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
     
@@ -166,9 +170,11 @@ def SH_Travel(DemandLever, DemandSpeed, DemandStart,
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
 def Domestic_Travel(DemandLever, DemandSpeed, DemandStart,
-                                    ClassLever, ClassSpeed, ClassStart, EmF):
+                    ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     Data = pd.read_excel(Data_URL, sheet_name='Domestic')
+    Data_Adj = Data / (LeakageFactor/100)
+    Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
     Data, BaU_ROC = gf.CleanData(Data)
     Data_Shares = gf.Shares(Data)
     
@@ -318,7 +324,7 @@ st.sidebar.write('### How to use')
 st.sidebar.write('A brief description on how to use this tool.')
 st.sidebar.divider()
 
-LeakageFactor = st.sidebar.number_input(label = '% of travel captured by Egencia', min_value = 0, max_value = 100, value = 60)
+LH_Leakage = st.sidebar.number_input(label = '% of Long haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 60)
 
 # Long haul parameters
 LH_Demand_Lever = st.sidebar.slider(label = 'Long haul Travel Demand', min_value = 1, max_value = 4,value = 1)
@@ -330,6 +336,7 @@ LH_Class_Start = st.sidebar.number_input(label = 'Long haul class start', min_va
 st.sidebar.divider()
 
 # Short haul parameters
+SH_Leakage = st.sidebar.number_input(label = '% of short haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 60)
 SH_Demand_Lever = st.sidebar.slider(label = 'Short haul Travel Demand', min_value = 1, max_value = 4,value = 1)
 SH_Demand_Speed = st.sidebar.number_input(label = 'Short haul demand speed', min_value = 1, max_value = 40, value=2)
 SH_Demand_Start = st.sidebar.number_input(label = 'Short haul demand start', min_value = 2024, max_value = 2050, value=2024)
@@ -339,6 +346,7 @@ SH_Class_Start = st.sidebar.number_input(label = 'Short haul class start', min_v
 st.sidebar.divider()
 
 # Domestic parameters
+DOM_Leakage = st.sidebar.number_input(label = '% of domestic aviation captured by Egencia', min_value = 0, max_value = 100, value = 60)
 DOM_Demand_Lever = st.sidebar.slider(label = 'Domestic Travel Demand', min_value = 1, max_value = 4,value = 1)
 DOM_Demand_Speed = st.sidebar.number_input(label = 'Domestic demand speed', min_value = 1, max_value = 40, value=2)
 DOM_Demand_Start = st.sidebar.number_input(label = 'Domestic demand start', min_value = 2024, max_value = 2050, value=2024)
@@ -348,9 +356,9 @@ DOM_Class_Start = st.sidebar.number_input(label = 'Domestic class start', min_va
 
 # ---------- Generate data 
 EmF = Travel_EmissionFactors()
-LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF)
-SH_Data = SH_Travel(SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF)
-DOM_Data = Domestic_Travel(DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF)
+LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
+SH_Data = SH_Travel(SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
+DOM_Data = Domestic_Travel(DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
 
 
 # ---------- Generate figures
