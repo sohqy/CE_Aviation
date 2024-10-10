@@ -217,7 +217,7 @@ def Figure_LongHaul_Classes(LH_Emissions):
 
     fig = px.line(LHAviationEmissions, y = Categories, 
                   title = 'Long haul aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,8.1e5],) 
+                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,8.1e5], range_x=[2018, 2030]) 
     return fig
 
 def Figure_ShortHaul_Classes(SH_Emissions):
@@ -226,7 +226,7 @@ def Figure_ShortHaul_Classes(SH_Emissions):
 
     fig = px.line(SHAviationEmissions, y = Categories, 
                   title = 'Short haul aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3],) 
+                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3], range_x=[2018, 2030]) 
     return fig
 
 def Figure_Domestic_Classes(Dom_Emissions):
@@ -235,7 +235,7 @@ def Figure_Domestic_Classes(Dom_Emissions):
 
     fig = px.line(DomAviationEmissions, y = Categories, 
                   title = 'Domestic aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3],) 
+                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3], range_x=[2018, 2030]) 
     return fig
 
 
@@ -258,12 +258,12 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
     Cumulative_Emissions = TotalEmissions.cumsum()
 
     fig_Cumulative = px.area(Cumulative_Emissions, 
-                  labels = {'value':'Cumulative Emissions (tCO2e)'}, range_y=[-1,2.5e4])
+                  labels = {'value':'Cumulative Emissions (tCO2e)'}, range_y=[-1,3.5e4], range_x=[2018, 2030])
 
     Baseline_Emission = TotalEmissions.loc[2022]
 
     Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, 'Domestic':Dom_Total })
-    fig = px.area(Totals, range_y=[-1, 900], labels = {'value':'Emissions (tCO2e)'})
+    fig = px.area(Totals, range_y=[-1, 1300], labels = {'value':'Emissions (tCO2e)'}, range_x=[2018, 2030])
     fig.add_traces(px.line(TotalEmissions, markers=True, color_discrete_sequence= ['black']).data)
     fig.add_hline(y=Baseline_Emission, line_width=2, line_dash="dash", 
         line_color="#ff8c00",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="#ff8c00" )
@@ -316,17 +316,32 @@ def Generate_Lever_Summary(LongHaul_Demand, ShortHaul_Demand, Domestic_Demand,
 #%% Application
 st.set_page_config(layout="wide")
 st.title('Chemical Engineering Aviation Emissions')
-st.write('Hello, an introduction here would be nice.')
+st.markdown('''
+            ###In development
+            Welcome to the Chemical Engineering aviation emissions calculator, a tool for supporting CE in making meaningful progress towards more sustainable business travel.
+            This is developed using the framework for the Imperial Net-Zero Carbon Calculator. 
+
+            Each lever corresponds to a type of action available, corresponding to an increasing level of of ambition. 
+            * **Level 1** corresponds to a minimum abatement effort,
+            * **Level 2** is an intermediate scenario where some effort is put into reducing the carbon footprint,
+            * **Level 3** is an ambitious but achievable scenario, and
+            * **Level 4** is an extraordinarily ambitious scenario.             
+            ''')
 
 # ---------- Control side panel
 st.sidebar.write('## Control panel')
 st.sidebar.write('### How to use')
-st.sidebar.write('A brief description on how to use this tool.')
+st.sidebar.markdown('''
+                    Each of long-haul, short-haul, and domestic travel have a set of levers associated to adjust their corresponding demand and travel classes used.
+                    The proportion of travel captured by Egencia data can also be adjusted separately for each category. 
+                    Each lever has an associated _level_, _action start_, and _action speed_.
+                    The definitions of the current set of lever selections are summarised on the right. 
+                    The start year defines when the mitigating action begins, and the change is applied progressively over the period indicated by the action speed. 
+                    ''')
 st.sidebar.divider()
 
-LH_Leakage = st.sidebar.number_input(label = '% of Long haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 100)
-
 # Long haul parameters
+LH_Leakage = st.sidebar.number_input(label = '% of long haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 70)
 LH_Demand_Lever = st.sidebar.slider(label = 'Long haul Travel Demand', min_value = 1, max_value = 4,value = 1)
 LH_Demand_Speed = st.sidebar.number_input(label = 'Long haul demand speed', min_value = 1, max_value = 40, value=2)
 LH_Demand_Start = st.sidebar.number_input(label = 'Long haul demand start', min_value = 2024, max_value = 2050, value=2024)
@@ -336,7 +351,7 @@ LH_Class_Start = st.sidebar.number_input(label = 'Long haul class start', min_va
 st.sidebar.divider()
 
 # Short haul parameters
-SH_Leakage = st.sidebar.number_input(label = '% of short haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 100)
+SH_Leakage = st.sidebar.number_input(label = '% of short haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 60)
 SH_Demand_Lever = st.sidebar.slider(label = 'Short haul Travel Demand', min_value = 1, max_value = 4,value = 1)
 SH_Demand_Speed = st.sidebar.number_input(label = 'Short haul demand speed', min_value = 1, max_value = 40, value=2)
 SH_Demand_Start = st.sidebar.number_input(label = 'Short haul demand start', min_value = 2024, max_value = 2050, value=2024)
@@ -346,7 +361,7 @@ SH_Class_Start = st.sidebar.number_input(label = 'Short haul class start', min_v
 st.sidebar.divider()
 
 # Domestic parameters
-DOM_Leakage = st.sidebar.number_input(label = '% of domestic aviation captured by Egencia', min_value = 0, max_value = 100, value = 100)
+DOM_Leakage = st.sidebar.number_input(label = '% of domestic aviation captured by Egencia', min_value = 0, max_value = 100, value = 40)
 DOM_Demand_Lever = st.sidebar.slider(label = 'Domestic Travel Demand', min_value = 1, max_value = 4,value = 1)
 DOM_Demand_Speed = st.sidebar.number_input(label = 'Domestic demand speed', min_value = 1, max_value = 40, value=2)
 DOM_Demand_Start = st.sidebar.number_input(label = 'Domestic demand start', min_value = 2024, max_value = 2050, value=2024)
