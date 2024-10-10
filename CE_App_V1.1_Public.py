@@ -317,7 +317,7 @@ def Generate_Lever_Summary(LongHaul_Demand, ShortHaul_Demand, Domestic_Demand,
 st.set_page_config(layout="wide")
 st.title('Chemical Engineering Aviation Emissions')
 st.markdown('''
-            ###In development
+            ### _This is still in development_
             Welcome to the Chemical Engineering aviation emissions calculator, a tool for supporting CE in making meaningful progress towards more sustainable business travel.
             This is developed using the framework for the Imperial Net-Zero Carbon Calculator. 
 
@@ -333,9 +333,13 @@ st.sidebar.write('## Control panel')
 st.sidebar.write('### How to use')
 st.sidebar.markdown('''
                     Each of long-haul, short-haul, and domestic travel have a set of levers associated to adjust their corresponding demand and travel classes used.
+
                     The proportion of travel captured by Egencia data can also be adjusted separately for each category. 
+                    
                     Each lever has an associated _level_, _action start_, and _action speed_.
+                    
                     The definitions of the current set of lever selections are summarised on the right. 
+                    
                     The start year defines when the mitigating action begins, and the change is applied progressively over the period indicated by the action speed. 
                     ''')
 st.sidebar.divider()
