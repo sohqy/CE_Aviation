@@ -267,8 +267,8 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
     fig.add_traces(px.line(TotalEmissions, markers=True, color_discrete_sequence= ['black']).data)
     fig.add_hline(y=Baseline_Emission, line_width=2, line_dash="dash", 
         line_color="#ff8c00",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="#ff8c00" )
-    fig.add_hline(y = 0.75 * Baseline_Emission, line_width = 2, line_color = '#008080', annotation_font_color="#008080",  
-                  annotation_text="2026 Emissions target (25% reduction)", line_dash = 'dot')
+    # fig.add_hline(y = 0.75 * Baseline_Emission, line_width = 2, line_color = '#008080', annotation_font_color="#008080",  
+    #               annotation_text="2026 Emissions target (25% reduction)", line_dash = 'dot')
     fig.add_vline(x=2023, line_width=2, line_dash="dash", line_color="#0000cd")
     return fig, fig_Cumulative
 
