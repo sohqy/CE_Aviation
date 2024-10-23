@@ -319,7 +319,7 @@ def Figure_FTE_Emissions(LH_Emissions, SH_Emissions, DOM_Emissions, Population):
     Emissions_FTE = TotalEmissions/Population_Total
 
     # 
-    Key_EmissionsFTE_Values = pd.DataFrame({'Baseline (2022)': Emissions_FTE.loc[2022], 'Target': Emissions_FTE.loc[2022] * 0.75, 'Current Selection (2026)': Emissions_FTE.loc[2026]})
+    Key_EmissionsFTE_Values = pd.DataFrame({'Baseline (2022)': Emissions_FTE.loc[2022], 'Target': Emissions_FTE.loc[2022] * 0.75, 'Current Selection (2026)': Emissions_FTE.loc[2026]}, index = [0])
     fig = px.bar(Key_EmissionsFTE_Values, labels = {'value':'Emissions per person (tCO2e/person)'}, range_y=[-1,1100] )
     return fig
 
