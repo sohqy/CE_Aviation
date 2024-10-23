@@ -223,6 +223,8 @@ def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
         gf.Projections(BaUData, Category, Population_AmbLevels, PopulationLever, PopulationSpeed, PopulationStart, ProjectedChanges, BaseYear = 2022,)
     
         ProjectedChanges = ProjectedChanges.round(0)
+    
+    ProjectedChanges.set_index('Year', inplace = True)
 
     return ProjectedChanges.to_json(date_format='iso', orient='split')
 
@@ -232,9 +234,9 @@ def Figure_Population_Categories(Population_Numbers):
     Population_Figures = pd.read_json(io.StringIO(Population_Numbers), orient = 'split')
     Categories = list(Population_Figures.columns)
 
-    fig = px.line(Population_Figures, y = Categories, 
+    fig = px.area(Population_Figures, y = Categories, 
                 title = 'Population',
-                labels = {'value':'Persons'}, range_y=[-1,4000], range_x=[2018, 2030])
+                labels = {'value':'Persons'}, range_y=[-1,2100], range_x=[2018, 2030])
     
     return fig
 
