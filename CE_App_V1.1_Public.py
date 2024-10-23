@@ -394,12 +394,6 @@ st.sidebar.markdown('''
                     ''')
 st.sidebar.divider()
 
-# Population levers
-Population_Change = st.sidebar.slider(label = 'Population change', min_value = 1, max_value = 4, value = 3)
-Population_Speed = st.sidebar.number_input(label = 'Population change speed', min_value = 1, max_value = 40, value=2)
-Population_Start = st.sidebar.number_input(label = 'Population change start', min_value = 2024, max_value = 2050, value=2024)
-st.sidebar.divider()
-
 # Long haul parameters
 LH_Leakage = st.sidebar.number_input(label = '% of long haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 70)
 LH_Demand_Lever = st.sidebar.slider(label = 'Long haul Travel Demand', min_value = 1, max_value = 4,value = 1)
@@ -428,6 +422,13 @@ DOM_Demand_Start = st.sidebar.number_input(label = 'Domestic demand start', min_
 DOM_Class_Lever = st.sidebar.slider(label = 'Domestic Travel Class', min_value = 1, max_value = 4,value = 1)
 DOM_Class_Speed = st.sidebar.number_input(label = 'Domestic class speed', min_value = 1, max_value = 40, value=2)
 DOM_Class_Start = st.sidebar.number_input(label = 'Domestic class start', min_value = 2024, max_value = 2050, value=2024)
+st.sidebar.divider()
+
+# Population levers
+Population_Change = st.sidebar.slider(label = 'Population change', min_value = 1, max_value = 4, value = 3)
+Population_Speed = st.sidebar.number_input(label = 'Population change speed', min_value = 1, max_value = 40, value=2)
+Population_Start = st.sidebar.number_input(label = 'Population change start', min_value = 2024, max_value = 2050, value=2024)
+
 
 # ---------- Generate data 
 Population = Population_Module(Population_Change, Population_Speed, Population_Start)
