@@ -395,7 +395,7 @@ st.sidebar.markdown('''
 st.sidebar.divider()
 
 # Population levers
-Population_Change = st.sidebar.slider(label = 'Population change', min_value = 1, max_value = 4,value = 1)
+Population_Change = st.sidebar.slider(label = 'Population change', min_value = 1, max_value = 4, value = 3)
 Population_Speed = st.sidebar.number_input(label = 'Population change speed', min_value = 1, max_value = 40, value=2)
 Population_Start = st.sidebar.number_input(label = 'Population change start', min_value = 2024, max_value = 2050, value=2024)
 st.sidebar.divider()
@@ -447,16 +447,16 @@ Figure_FTE = Figure_FTE_Emissions(LH_Data, SH_Data, DOM_Data, Population)
 
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
 with Body_Column:
-    Overview_Page, Details_Page, Demand_Page = st.tabs(["Overview", "Emissions by categories", "Demand"])
+    Overview_Page, Details_Page = st.tabs(["Overview", "Emissions by categories",])
     Overview_Page.plotly_chart(Figure_Emissions, theme = 'streamlit')
+    Overview_Page.plotly_chart(Figure_FTE, theme = 'streamlit')
     Overview_Page.plotly_chart(Figure_Cumulative, theme = 'streamlit')
 
+    Details_Page.plotly_chart(Figure_Population, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_LH, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_SH, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_DOM, theme = 'streamlit')
 
-    Demand_Page.plotly_chart(Figure_Population, theme = 'streamlit')
-    Demand_Page.plotly_chart(Figure_FTE, theme = 'streamlit')
 Summary_Column.write(Generate_Lever_Summary(LH_Demand_Lever, SH_Demand_Lever, DOM_Demand_Lever,
                                             LH_Class_Lever, SH_Class_Lever, DOM_Class_Lever))
 # %%
