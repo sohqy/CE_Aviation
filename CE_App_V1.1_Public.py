@@ -236,7 +236,7 @@ def Figure_Population_Categories(Population_Numbers):
                 title = 'Population',
                 labels = {'value':'Persons'}, range_y=[-1,4000], range_x=[2018, 2030])
     
-    return 
+    return fig
 
 def Figure_LongHaul_Classes(LH_Emissions):
     LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
