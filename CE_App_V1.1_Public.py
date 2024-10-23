@@ -208,8 +208,35 @@ def Domestic_Travel(DemandLever, DemandSpeed, DemandStart,
     
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
+def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
+    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
+    Data = pd.read_excel(Data_URL, sheet_name='Population')
+    Data, BaU_ROC = gf.CleanData(Data)
+    
+    Categories = list(Data.columns)
+
+    ProjectedChanges = pd.DataFrame({'Year':CalculatorTime_Range})
+    Population_AmbLevels = {1: 1.2, 2: 1.15, 3: 1.1, 4: 1.0}
+
+    for Category in Categories:
+        BaUData = gf.BaU_Pathways(Data, Category,  BaU_ROC = BaU_ROC[Category])
+        gf.Projections(BaUData, Category, Population_AmbLevels, PopulationLever, PopulationSpeed, PopulationStart, ProjectedChanges, BaseYear = 2022,)
+    
+        ProjectedChanges = ProjectedChanges.round(0)
+
+    return ProjectedChanges.to_json(date_format='iso', orient='split')
+
 
 #%% FIGURE GENERATORS
+def Figure_Population_Categories(Population_Numbers):
+    Population_Figures = pd.read_json(io.StringIO(Population_Numbers), orient = 'split')
+    Categories = list(Population_Figures.columns)
+
+    fig = px.line(Population_Figures, y = Categories, 
+                title = 'Population',
+                labels = {'value':'Persons'}, range_y=[-1,4000], range_x=[2018, 2030])
+    
+    return 
 
 def Figure_LongHaul_Classes(LH_Emissions):
     LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
@@ -374,6 +401,7 @@ DOM_Class_Speed = st.sidebar.number_input(label = 'Domestic class speed', min_va
 DOM_Class_Start = st.sidebar.number_input(label = 'Domestic class start', min_value = 2024, max_value = 2050, value=2024)
 
 # ---------- Generate data 
+Population = Population_Module(4, 1, 2025)
 EmF = Travel_EmissionFactors()
 LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
 SH_Data = SH_Travel(SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
@@ -381,6 +409,7 @@ DOM_Data = Domestic_Travel(DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start,
 
 
 # ---------- Generate figures
+Figure_Population = Figure_Population_Categories(Population)
 Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data, DOM_Data)
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
 Figure_SH = Figure_ShortHaul_Classes(SH_Data)
@@ -388,13 +417,15 @@ Figure_DOM = Figure_Domestic_Classes(DOM_Data)
 
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
 with Body_Column:
-    Overview_Page, Details_Page = st.tabs(["Overview", "Breakdowns"])
+    Overview_Page, Details_Page, Demand_Page = st.tabs(["Overview", "Emissions by categories", "Demand"])
     Overview_Page.plotly_chart(Figure_Emissions, theme = 'streamlit')
     Overview_Page.plotly_chart(Figure_Cumulative, theme = 'streamlit')
 
     Details_Page.plotly_chart(Figure_LH, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_SH, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_DOM, theme = 'streamlit')
+
+    Demand_Page.plotly_chart(Figure_Population, theme = 'streamlit')
 
 Summary_Column.write(Generate_Lever_Summary(LH_Demand_Lever, SH_Demand_Lever, DOM_Demand_Lever,
                                             LH_Class_Lever, SH_Class_Lever, DOM_Class_Lever))

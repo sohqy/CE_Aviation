@@ -1,8 +1,8 @@
 """ 
-CODE TITLE HERE 
-Created 
+Generalised framework for NZ calculator. 
+Created August 2024
 Qiao Yan Soh. qys13@ic.ac.uk 
-Last updated 
+Last updated October 2024
 """
 
 import numpy as np
@@ -14,10 +14,10 @@ def CleanData(Data):
     Ensures data read has no nans, transforms strings into flaots, and calculates a BaU rate of change.
 
     Args:
-        Data (pandas dataframe): a dataframe read from csv files containing data with year indices and columns as different categories. 
+        Data (dataframe): Data with year indices and columns as different categories. 
 
     Returns:
-        _type_: _description_
+        (dataframe, float): A dataframe containing cleaned historical data ready for use 
     """
     Modules = list(Data.columns)
     Modules.remove('Year')
@@ -47,11 +47,27 @@ def Determine_AmbitionLevelBounds(AmbitionLevel):
     return AmbitionLevel_UB, AmbitionLevel_LB
 
 def BaU_Pathways(Data, Category, BaU_ROC = None, CalculatorTime_Range = list(range(2018, 2051))):
-    # Determine BaU pathway
+    """
+    Extrapolates the given historical data to produce a 'business-as-usual' pathway. 
+    
+    Args:
+        Data (dataframe): Historical data for the module. This needs to have years in its index and categories as its columns.
+        Category (str): Name of column corresponding to the category of interest.
+        BaU_ROC (float, optional): Rate of change calculated from historical data. If not available, the last known historical data point is used. Defaults to None.
+        CalculatorTime_Range (list, optional): List corresponding to the time steps used in the calculator. Defaults to list(range(2018, 2051)).
+
+    Returns:
+        dataframe: Dataframe with the year as its index, corresponding to the BaU pathway for the given category.
+    """
+    # Set up output dataframe
     Projected_BaUData = pd.DataFrame({'Year':CalculatorTime_Range})
     BaUData = Projected_BaUData.join(Data[Category], on='Year')        
-    FinalPoint = BaUData[Category][BaUData[Category].notnull()].values[-1]      # Final non NA
+    
+    # Find final historical data point
+    FinalPoint = BaUData[Category][BaUData[Category].notnull()].values[-1]      
     FinalIdx = np.where(BaUData[Category] == FinalPoint)[0][0]
+    
+    # Apply change rates if applicable.
     if BaU_ROC is not None:
         FinalYear = BaUData['Year'][FinalIdx]
         BaUData[Category] = BaUData[Category].fillna(value = FinalPoint * (1+BaU_ROC)**(BaUData['Year'] - FinalYear))
@@ -106,9 +122,6 @@ def Shares(Data, ):
     Data_Shares['Total'] = Total
     return Data_Shares
 
-# def ShareAmbLevels(Categories): TODO how can this be simplified as an input? 
-
-#     return AmbitionLevels
 
 def CheckShareAmbLevels(Share_AmbLevels):
     """
