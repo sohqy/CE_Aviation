@@ -315,8 +315,9 @@ def Figure_FTE_Emissions(LH_Emissions, SH_Emissions, DOM_Emissions, Population):
     TotalEmissions.rename('Total aviation emissions', inplace=True)
 
     Population = pd.read_json(io.StringIO(Population), orient = 'split')
-    Emissions_FTE = TotalEmissions/Population 
-    fig = px.line(TotalEmissions, )
+    Population_Total = Population.sum(axis = 1) / 1000
+    Emissions_FTE = TotalEmissions/Population_Total
+    fig = px.line(Emissions_FTE, )
     return fig
 
 #%% Summary generators
