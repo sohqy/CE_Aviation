@@ -316,7 +316,7 @@ def Figure_FTE_Emissions(LH_Emissions, SH_Emissions, DOM_Emissions, Population):
 
     Population = pd.read_json(io.StringIO(Population), orient = 'split')
     Emissions_FTE = TotalEmissions/Population 
-    fig = px.line(Emissions_FTE, )
+    fig = px.line(TotalEmissions, )
     return fig
 
 #%% Summary generators
@@ -394,6 +394,7 @@ st.sidebar.divider()
 Population_Change = st.sidebar.slider(label = 'Population change', min_value = 1, max_value = 4,value = 1)
 Population_Speed = st.sidebar.number_input(label = 'Population change speed', min_value = 1, max_value = 40, value=2)
 Population_Start = st.sidebar.number_input(label = 'Population change start', min_value = 2024, max_value = 2050, value=2024)
+st.sidebar.divider()
 
 # Long haul parameters
 LH_Leakage = st.sidebar.number_input(label = '% of long haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 70)
