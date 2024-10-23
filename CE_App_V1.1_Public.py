@@ -236,7 +236,7 @@ def Figure_Population_Categories(Population_Numbers):
 
     fig = px.area(Population_Figures, y = Categories, 
                 title = 'Population',
-                labels = {'value':'Persons'}, range_y=[-1,2100], range_x=[2018, 2030])
+                labels = {'value':'Persons'}, range_y=[-1,1500], range_x=[2019, 2030])
     
     return fig
 
@@ -246,7 +246,7 @@ def Figure_LongHaul_Classes(LH_Emissions):
 
     fig = px.line(LHAviationEmissions, y = Categories, 
                   title = 'Long haul aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,8.1e5], range_x=[2018, 2030]) 
+                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,8.1e5], range_x=[2019, 2030]) 
     return fig
 
 def Figure_ShortHaul_Classes(SH_Emissions):
@@ -255,7 +255,7 @@ def Figure_ShortHaul_Classes(SH_Emissions):
 
     fig = px.line(SHAviationEmissions, y = Categories, 
                   title = 'Short haul aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3], range_x=[2018, 2030]) 
+                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3], range_x=[2019, 2030]) 
     return fig
 
 def Figure_Domestic_Classes(Dom_Emissions):
@@ -264,7 +264,7 @@ def Figure_Domestic_Classes(Dom_Emissions):
 
     fig = px.line(DomAviationEmissions, y = Categories, 
                   title = 'Domestic aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3], range_x=[2018, 2030]) 
+                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3], range_x=[2019, 2030]) 
     return fig
 
 
@@ -287,12 +287,12 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
     Cumulative_Emissions = TotalEmissions.cumsum()
 
     fig_Cumulative = px.area(Cumulative_Emissions, 
-                  labels = {'value':'Cumulative Emissions (tCO2e)'}, range_y=[-1,3.5e4], range_x=[2018, 2030])
+                  labels = {'value':'Cumulative Emissions (tCO2e)'}, range_y=[-1,3.5e4], range_x=[2019, 2030])
 
     Baseline_Emission = TotalEmissions.loc[2022]
 
     Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, 'Domestic':Dom_Total })
-    fig = px.area(Totals, range_y=[-1, 1300], labels = {'value':'Emissions (tCO2e)'}, range_x=[2018, 2030])
+    fig = px.area(Totals, range_y=[-1, 1300], labels = {'value':'Emissions (tCO2e)'}, range_x=[2019, 2030])
     fig.add_traces(px.line(TotalEmissions, markers=True, color_discrete_sequence= ['black']).data)
     fig.add_hline(y=Baseline_Emission, line_width=2, line_dash="dash", 
         line_color="#ff8c00",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="#ff8c00" )
@@ -301,6 +301,23 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
     fig.add_vline(x=2023, line_width=2, line_dash="dash", line_color="#0000cd")
     return fig, fig_Cumulative
 
+def Figure_FTE_Emissions(LH_Emissions, SH_Emissions, DOM_Emissions, Population):
+    LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
+    LH_Total = LHAviationEmissions.sum(axis = 1) / 1000
+
+    SHAviationEmissions = pd.read_json(io.StringIO(SH_Emissions), orient = 'split')
+    SH_Total = SHAviationEmissions.sum(axis = 1) / 1000
+
+    DomAviationEmissions = pd.read_json(io.StringIO(DOM_Emissions), orient = 'split')
+    Dom_Total = DomAviationEmissions.sum(axis = 1) / 1000
+
+    TotalEmissions = LH_Total + SH_Total + Dom_Total
+    TotalEmissions.rename('Total aviation emissions', inplace=True)
+
+    Population = pd.read_json(io.StringIO(Population), orient = 'split')
+    Emissions_FTE = TotalEmissions/Population 
+    fig = px.line(Emissions_FTE, )
+    return fig
 
 #%% Summary generators
 def Return_Selected_Ambitions(AmbitionLevel_Definitions, AmbitionLevel):
@@ -373,6 +390,11 @@ st.sidebar.markdown('''
                     ''')
 st.sidebar.divider()
 
+# Population levers
+Population_Change = st.sidebar.slider(label = 'Population change', min_value = 1, max_value = 4,value = 1)
+Population_Speed = st.sidebar.number_input(label = 'Population change speed', min_value = 1, max_value = 40, value=2)
+Population_Start = st.sidebar.number_input(label = 'Population change start', min_value = 2024, max_value = 2050, value=2024)
+
 # Long haul parameters
 LH_Leakage = st.sidebar.number_input(label = '% of long haul aviation captured by Egencia', min_value = 0, max_value = 100, value = 70)
 LH_Demand_Lever = st.sidebar.slider(label = 'Long haul Travel Demand', min_value = 1, max_value = 4,value = 1)
@@ -403,7 +425,7 @@ DOM_Class_Speed = st.sidebar.number_input(label = 'Domestic class speed', min_va
 DOM_Class_Start = st.sidebar.number_input(label = 'Domestic class start', min_value = 2024, max_value = 2050, value=2024)
 
 # ---------- Generate data 
-Population = Population_Module(4, 1, 2025)
+Population = Population_Module(Population_Change, Population_Speed, Population_Start)
 EmF = Travel_EmissionFactors()
 LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
 SH_Data = SH_Travel(SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
@@ -416,6 +438,7 @@ Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data, DO
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
 Figure_SH = Figure_ShortHaul_Classes(SH_Data)
 Figure_DOM = Figure_Domestic_Classes(DOM_Data)
+Figure_FTE = Figure_FTE_Emissions(LH_Data, SH_Data, DOM_Data, Population)
 
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
 with Body_Column:
@@ -428,7 +451,7 @@ with Body_Column:
     Details_Page.plotly_chart(Figure_DOM, theme = 'streamlit')
 
     Demand_Page.plotly_chart(Figure_Population, theme = 'streamlit')
-
+    Demand_Page.plotly_chart(Figure_FTE, theme = 'streamlit')
 Summary_Column.write(Generate_Lever_Summary(LH_Demand_Lever, SH_Demand_Lever, DOM_Demand_Lever,
                                             LH_Class_Lever, SH_Class_Lever, DOM_Class_Lever))
 # %%
