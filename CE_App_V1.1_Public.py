@@ -292,7 +292,7 @@ def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
     Baseline_Emission = TotalEmissions.loc[2022]
 
     Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, 'Domestic':Dom_Total })
-    fig = px.area(Totals, range_y=[-1, 1300], labels = {'value':'Emissions (tCO2e)'}, range_x=[2019, 2030])
+    fig = px.area(Totals, range_y=[-1, 1300], labels = {'value':'Emissions (tCO2e)', 'index':''}, range_x=[2019, 2030])
     fig.add_traces(px.line(TotalEmissions, markers=True, color_discrete_sequence= ['black']).data)
     fig.add_hline(y=Baseline_Emission, line_width=2, line_dash="dash", 
         line_color="#ff8c00",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="#ff8c00" )
@@ -320,7 +320,8 @@ def Figure_FTE_Emissions(LH_Emissions, SH_Emissions, DOM_Emissions, Population):
 
     # 
     Key_EmissionsFTE_Values = pd.DataFrame({'Baseline (2022)': Emissions_FTE.loc[2022], 'Target': Emissions_FTE.loc[2022] * 0.75, 'Current Selection (2026)': Emissions_FTE.loc[2026]}, index = [0])
-    fig = px.bar(Key_EmissionsFTE_Values.T, labels = {'value':'Emissions per person (tCO2e/person)'}, range_y=[-1,1100] )
+    fig = px.bar(Key_EmissionsFTE_Values.T, labels = {'value':'Emissions per person (tCO2e/person)', 'index':''},
+                  range_y=[-1,1100], text_auto='.2s')
     return fig
 
 #%% Summary generators
