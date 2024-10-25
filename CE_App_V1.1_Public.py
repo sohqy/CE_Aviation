@@ -172,44 +172,6 @@ def CreateFigure_Categorical(CategoriesData, FigTitle, xLabel, yLabel, yRange, x
     return fig
 
 
-def Figure_Population_Categories(Population_Numbers):
-    Population_Figures = pd.read_json(io.StringIO(Population_Numbers), orient = 'split')
-    Categories = list(Population_Figures.columns)
-
-    fig = px.area(Population_Figures, y = Categories, 
-                title = 'Population',
-                labels = {'value':'Persons'}, range_y=[-1,1500], range_x=[2019, 2030])
-    
-    return fig
-
-def Figure_LongHaul_Classes(LH_Emissions):
-    LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
-    Categories = list(LHAviationEmissions.columns)
-
-    fig = px.line(LHAviationEmissions, y = Categories, 
-                  title = 'Long haul aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,8.1e5], range_x=[2019, 2030]) 
-    return fig
-
-def Figure_ShortHaul_Classes(SH_Emissions):
-    SHAviationEmissions = pd.read_json(io.StringIO(SH_Emissions), orient = 'split')
-    Categories = list(SHAviationEmissions.columns)
-
-    fig = px.line(SHAviationEmissions, y = Categories, 
-                  title = 'Short haul aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3], range_x=[2019, 2030]) 
-    return fig
-
-def Figure_Domestic_Classes(Dom_Emissions):
-    DomAviationEmissions = pd.read_json(io.StringIO(Dom_Emissions), orient = 'split')
-    Categories = list(DomAviationEmissions.columns)
-
-    fig = px.line(DomAviationEmissions, y = Categories, 
-                  title = 'Domestic aviation emissions',
-                 labels = {'value':'Emissions (kgCO2e)'}, range_y=[-1,6e3], range_x=[2019, 2030]) 
-    return fig
-
-
 def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
     
     LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
@@ -385,9 +347,9 @@ DOM_Data = Generalised_TravelModule('Domestic',DOM_Demand_Lever, DOM_Demand_Spee
 # ---------- Generate figures
 Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
 Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data, DOM_Data)
-Figure_LH = Figure_LongHaul_Classes(LH_Data)
-Figure_SH = Figure_ShortHaul_Classes(SH_Data)
-Figure_DOM = Figure_Domestic_Classes(DOM_Data)
+Figure_LH = CreateFigure_Categorical(LH_Data, 'Long haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,8.1e5] )
+Figure_SH = CreateFigure_Categorical(SH_Data, 'Short haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
+Figure_DOM = CreateFigure_Categorical(DOM_Data, 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
 Figure_FTE = Figure_FTE_Emissions(LH_Data, SH_Data, DOM_Data, Population)
 
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
