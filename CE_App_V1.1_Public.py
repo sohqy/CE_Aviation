@@ -96,10 +96,7 @@ def Generalised_TravelModule(HaulType, DemandLever, DemandSpeed, DemandStart,
     if HaulType == 'LongHaul':
         shorthandHaul = 'lH'
     else:
-        if HaulType != ('ShortHaul'|'Domestic'):
-            return ValueError('Haul type can only be LongHaul, ShortHaul, or Domestic')
-        else:
-            shorthandHaul = 'sH'
+        shorthandHaul = 'sH'
     
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     Data = pd.read_excel(Data_URL, sheet_name= HaulType)
