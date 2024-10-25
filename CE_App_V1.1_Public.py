@@ -135,124 +135,6 @@ def Generalised_TravelModule(HaulType, DemandLever, DemandSpeed, DemandStart,
     
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
-
-def LH_Travel(DemandLever, DemandSpeed, DemandStart, 
-              ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
-    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
-    Data = pd.read_excel(Data_URL, sheet_name='LongHaul')
-    Data_Adj = Data.drop(columns = 'Year') / (LeakageFactor/100)
-    Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
-    Data, BaU_ROC = gf.CleanData(Data)
-    Data_Shares = gf.Shares(Data)
-    
-    EmFactors = pd.read_json(io.StringIO(EmF), orient = 'split')
-    ProjectedChanges = pd.DataFrame({'Year':CalculatorTime_Range})
-
-    BaU_Demand = gf.BaU_Pathways(Data_Shares, 'Total')          # Unit demand.
-    gf.Projections(BaU_Demand, 'Total', LH_Demand_AmbLevels, 
-                   DemandLever, DemandSpeed, DemandStart, ProjectedChanges, BaseYear=2022, )
-    
-    ProjectedDemand = pd.DataFrame({'Year':CalculatorTime_Range})
-    ProjectedDemand['Total'] = ProjectedChanges['Total']
-
-    ProjectedShares = pd.DataFrame({'Year':CalculatorTime_Range})
-
-    Categories = list(Data_Shares.columns)
-    Categories.remove('Total')
-
-    # ---------- Determine activity by mode and engine
-    ActivityByMode = pd.DataFrame({'Year':CalculatorTime_Range})
-    Activity_ModeEngine = pd.DataFrame({'Year':CalculatorTime_Range})
-    for Category in Categories:
-        BaUData = gf.BaU_Pathways(Data_Shares, Category)
-        gf.Projections(BaUData, Category, LH_Share_AmbLevels[Category], ClassLever, ClassSpeed, ClassStart, 
-                       ProjectedShares, AmbitionsMode='Absolute', BaseYear=2022,)
-        ActivityByMode[Category] = ProjectedDemand['Total'] * ProjectedShares[Category]
-    Activity_ModeEngine.set_index('Year', inplace = True)
-    ActivityByMode.set_index('Year', inplace = True)
-
-    AllEmissions = gf.Aviation_Emissions(Categories, 'lH', EmFactors, ActivityByMode)
-    
-    return AllEmissions.to_json(date_format = 'iso', orient = 'split')
-
-def SH_Travel(DemandLever, DemandSpeed, DemandStart,
-                ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
-    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
-    Data = pd.read_excel(Data_URL, sheet_name='ShortHaul')
-    Data_Adj = Data.drop(columns = 'Year') / (LeakageFactor/100)
-    Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
-    Data, BaU_ROC = gf.CleanData(Data)
-    Data_Shares = gf.Shares(Data)
-    
-    EmFactors = pd.read_json(io.StringIO(EmF), orient = 'split')
-    ProjectedChanges = pd.DataFrame({'Year':CalculatorTime_Range})
-
-    BaU_Demand = gf.BaU_Pathways(Data_Shares, 'Total')          # Unit demand.
-    gf.Projections(BaU_Demand, 'Total', SH_Demand_AmbLevels, 
-                   DemandLever, DemandSpeed, DemandStart, ProjectedChanges, BaseYear=2022,)
-    
-    ProjectedDemand = pd.DataFrame({'Year':CalculatorTime_Range})
-    ProjectedDemand['Total'] = ProjectedChanges['Total']
-
-    ProjectedShares = pd.DataFrame({'Year':CalculatorTime_Range})
-
-    Categories = list(Data_Shares.columns)
-    Categories.remove('Total')
-
-    # ---------- Determine activity by mode and engine
-    ActivityByMode = pd.DataFrame({'Year':CalculatorTime_Range})
-    Activity_ModeEngine = pd.DataFrame({'Year':CalculatorTime_Range})
-    for Category in Categories:
-        BaUData = gf.BaU_Pathways(Data_Shares, Category)
-        gf.Projections(BaUData, Category, SH_Share_AmbLevels[Category], ClassLever, ClassSpeed, ClassStart, 
-                       ProjectedShares, AmbitionsMode='Absolute', BaseYear=2022, )
-        ActivityByMode[Category] = ProjectedDemand['Total'] * ProjectedShares[Category]
-    Activity_ModeEngine.set_index('Year', inplace = True)
-    ActivityByMode.set_index('Year', inplace = True)
-
-    AllEmissions = gf.Aviation_Emissions(Categories, 'sH', EmFactors, ActivityByMode)
-    
-    return AllEmissions.to_json(date_format = 'iso', orient = 'split')
-
-def Domestic_Travel(DemandLever, DemandSpeed, DemandStart,
-                    ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
-    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
-    Data = pd.read_excel(Data_URL, sheet_name='Domestic')
-    Data_Adj = Data.drop(columns = 'Year') / (LeakageFactor/100)
-    Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
-    Data, BaU_ROC = gf.CleanData(Data)
-    Data_Shares = gf.Shares(Data)
-    
-    EmFactors = pd.read_json(io.StringIO(EmF), orient = 'split')
-    ProjectedChanges = pd.DataFrame({'Year':CalculatorTime_Range})
-
-    BaU_Demand = gf.BaU_Pathways(Data_Shares, 'Total')          # Unit demand.
-    gf.Projections(BaU_Demand, 'Total', Dom_Demand_AmbLevels, 
-                   DemandLever, DemandSpeed, DemandStart, ProjectedChanges, BaseYear=2022,)
-    
-    ProjectedDemand = pd.DataFrame({'Year':CalculatorTime_Range})
-    ProjectedDemand['Total'] = ProjectedChanges['Total']
-
-    ProjectedShares = pd.DataFrame({'Year':CalculatorTime_Range})
-
-    Categories = list(Data_Shares.columns)
-    Categories.remove('Total')
-
-    # ---------- Determine activity by mode and engine
-    ActivityByMode = pd.DataFrame({'Year':CalculatorTime_Range})
-    Activity_ModeEngine = pd.DataFrame({'Year':CalculatorTime_Range})
-    for Category in Categories:
-        BaUData = gf.BaU_Pathways(Data_Shares, Category)
-        gf.Projections(BaUData, Category, Dom_Share_AmbLevels[Category], ClassLever, ClassSpeed, ClassStart, 
-                       ProjectedShares, AmbitionsMode='Absolute', BaseYear=2022, )
-        ActivityByMode[Category] = ProjectedDemand['Total'] * ProjectedShares[Category]
-    Activity_ModeEngine.set_index('Year', inplace = True)
-    ActivityByMode.set_index('Year', inplace = True)
-
-    AllEmissions = gf.Aviation_Emissions(Categories, 'sH', EmFactors, ActivityByMode)
-    
-    return AllEmissions.to_json(date_format = 'iso', orient = 'split')
-
 def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
     Data = pd.read_excel(Data_URL, sheet_name='Population')
@@ -275,6 +157,21 @@ def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
 
 
 #%% FIGURE GENERATORS
+def CreateFigure_Categorical(CategoriesData, FigTitle, xLabel, yLabel, yRange, xRange = [2019, 2030]):
+    Data = gf.JSONtoDF(CategoriesData)
+    Categories = list(Data.columns)
+
+    if type == 'Area':
+        fig = px.area(Data, y = Categories, 
+                    title = FigTitle,
+                    labels = {'value':yLabel, 'index': xLabel}, range_y=yRange, range_x=xRange)
+    else:
+        fig = px.line(Data, y = Categories, 
+                title = FigTitle,
+                labels = {'value':yLabel, 'index': xLabel}, range_y=yRange, range_x=xRange) 
+    return fig
+
+
 def Figure_Population_Categories(Population_Numbers):
     Population_Figures = pd.read_json(io.StringIO(Population_Numbers), orient = 'split')
     Categories = list(Population_Figures.columns)
@@ -486,7 +383,7 @@ DOM_Data = Generalised_TravelModule('Domestic',DOM_Demand_Lever, DOM_Demand_Spee
 
 
 # ---------- Generate figures
-Figure_Population = Figure_Population_Categories(Population)
+Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500])
 Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data, DOM_Data)
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
 Figure_SH = Figure_ShortHaul_Classes(SH_Data)
