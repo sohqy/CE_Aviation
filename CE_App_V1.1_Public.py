@@ -94,7 +94,7 @@ def Travel_EmissionFactors():
 def Generalised_TravelModule(HaulType, DemandLever, DemandSpeed, DemandStart, 
               ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     if HaulType == 'LongHaul':
-        shorthandHaul = 'lh'
+        shorthandHaul = 'lH'
     else:
         if HaulType != ('ShortHaul'|'Domestic'):
             return ValueError('Haul type can only be LongHaul, ShortHaul, or Domestic')
