@@ -91,6 +91,54 @@ def Travel_EmissionFactors():
 
     return GHG_EmF.to_json(date_format = 'iso', orient = 'split')
 
+def Generalised_TravelModule(HaulType, DemandLever, DemandSpeed, DemandStart, 
+              ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
+    if HaulType == 'LongHaul':
+        shorthandHaul = 'lh'
+    else:
+        if HaulType != ('ShortHaul'|'Domestic'):
+            return ValueError('Haul type can only be LongHaul, ShortHaul, or Domestic')
+        else:
+            shorthandHaul = 'sH'
+    
+    Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
+    Data = pd.read_excel(Data_URL, sheet_name= HaulType)
+    Data_Adj = Data.drop(columns = 'Year') / (LeakageFactor/100)
+    Data = pd.concat([Data['Year'], Data_Adj], axis = 1)
+    Data, BaU_ROC = gf.CleanData(Data)
+    Data_Shares = gf.Shares(Data)
+    
+    EmFactors = gf.JSONtoDF(EmF)
+    ProjectedChanges = pd.DataFrame({'Year':CalculatorTime_Range})
+
+    BaU_Demand = gf.BaU_Pathways(Data_Shares, 'Total')          # Unit demand.
+    gf.Projections(BaU_Demand, 'Total', LH_Demand_AmbLevels, 
+                   DemandLever, DemandSpeed, DemandStart, ProjectedChanges, BaseYear=2022, )
+    
+    ProjectedDemand = pd.DataFrame({'Year':CalculatorTime_Range})
+    ProjectedDemand['Total'] = ProjectedChanges['Total']
+
+    ProjectedShares = pd.DataFrame({'Year':CalculatorTime_Range})
+
+    Categories = list(Data_Shares.columns)
+    Categories.remove('Total')
+
+    # ---------- Determine activity by mode and engine
+    ActivityByMode = pd.DataFrame({'Year':CalculatorTime_Range})
+    Activity_ModeEngine = pd.DataFrame({'Year':CalculatorTime_Range})
+    for Category in Categories:
+        BaUData = gf.BaU_Pathways(Data_Shares, Category)
+        gf.Projections(BaUData, Category, LH_Share_AmbLevels[Category], ClassLever, ClassSpeed, ClassStart, 
+                       ProjectedShares, AmbitionsMode='Absolute', BaseYear=2022,)
+        ActivityByMode[Category] = ProjectedDemand['Total'] * ProjectedShares[Category]
+    Activity_ModeEngine.set_index('Year', inplace = True)
+    ActivityByMode.set_index('Year', inplace = True)
+
+    AllEmissions = gf.Aviation_Emissions(Categories, shorthandHaul, EmFactors, ActivityByMode)
+    
+    return AllEmissions.to_json(date_format = 'iso', orient = 'split')
+
+
 def LH_Travel(DemandLever, DemandSpeed, DemandStart, 
               ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
@@ -204,7 +252,7 @@ def Domestic_Travel(DemandLever, DemandSpeed, DemandStart,
     Activity_ModeEngine.set_index('Year', inplace = True)
     ActivityByMode.set_index('Year', inplace = True)
 
-    AllEmissions = gf.Aviation_Emissions(Categories, 'lH', EmFactors, ActivityByMode)
+    AllEmissions = gf.Aviation_Emissions(Categories, 'sH', EmFactors, ActivityByMode)
     
     return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
@@ -435,9 +483,9 @@ Population_Start = st.sidebar.number_input(label = 'Population change start', mi
 # ---------- Generate data 
 Population = Population_Module(Population_Change, Population_Speed, Population_Start)
 EmF = Travel_EmissionFactors()
-LH_Data = LH_Travel(LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
-SH_Data = SH_Travel(SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
-DOM_Data = Domestic_Travel(DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
+LH_Data = Generalised_TravelModule('LongHaul', LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
+SH_Data = Generalised_TravelModule('ShortHaul', SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
+DOM_Data = Generalised_TravelModule('Domestic',DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
 
 
 # ---------- Generate figures

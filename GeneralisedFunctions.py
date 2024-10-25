@@ -17,7 +17,7 @@ def CleanData(Data):
         Data (dataframe): Data with year indices and columns as different categories. 
 
     Returns:
-        (dataframe, float): A dataframe containing cleaned historical data ready for use 
+        (dataframe, float): A dataframe containing cleaned historical data ready for use, and a scalar value corresponding to the Business-as-usual rate of change.
     """
     Modules = list(Data.columns)
     Modules.remove('Year')
@@ -34,14 +34,15 @@ def Determine_AmbitionLevelBounds(AmbitionLevel):
     Find upper and lower bounds of the ambition levels - required for when this is not set to the integer values.
 
     Args:
-        AmbitionLevel (_type_): _description_
+        AmbitionLevel (float): Selected ambition level value.
 
     Returns:
-        _type_: _description_
+        tuple: values corresponding to the upper and lower integer bounds of the selected ambition level. 
     """
-    # Ambition_ROC = Def_AmbitionLevels[AmbitionLevel]**(1/AmbitionSpeed) - 1
     AmbitionLevel_UB = np.ceil(AmbitionLevel)
     AmbitionLevel_LB = np.floor(AmbitionLevel)
+
+    # Check if the ambition level provided is an integer value. 
     if AmbitionLevel_UB == AmbitionLevel_LB:
         AmbitionLevel_UB += 1
     return AmbitionLevel_UB, AmbitionLevel_LB
@@ -80,9 +81,27 @@ def BaU_Pathways(Data, Category, BaU_ROC = None, CalculatorTime_Range = list(ran
 
 def Projections(BaUData, Category, Ambition_Definitions, Level, AmbitionSpeed, AmbitionStart, ProjectedChanges, 
                 BaseYear = 2018, AmbitionsMode = 'Percentage'):    
+    """
+    _summary_
 
+    Args:
+        BaUData (_type_): _description_
+        Category (_type_): _description_
+        Ambition_Definitions (_type_): _description_
+        Level (_type_): _description_
+        AmbitionSpeed (_type_): _description_
+        AmbitionStart (_type_): _description_
+        ProjectedChanges (_type_): _description_
+        BaseYear (int, optional): _description_. Defaults to 2018.
+        AmbitionsMode (str, optional): _description_. Defaults to 'Percentage'.
+
+    Returns:
+        _type_: _description_
+    """
+    # Define base year and set up ambition bounds. 
     BaseYear_Value = BaUData[Category].loc[BaseYear]
     AmbitionLevel_UB, AmbitionLevel_LB = Determine_AmbitionLevelBounds(Level)
+
     if AmbitionsMode == 'Percentage':
         MappedAmbitionLevels = {k: v * BaseYear_Value for k, v in Ambition_Definitions.items()}  # Translate percentages into correct units, if not this is absolute 
     else:
@@ -95,7 +114,8 @@ def Projections(BaUData, Category, Ambition_Definitions, Level, AmbitionSpeed, A
 
     # Recalculate new pathways based on given parameters
     NewData = []
-    AmbStartValue = BaUData[Category].loc[AmbitionStart-1]
+    AmbStartValue = BaUData[Category].loc[AmbitionStart-1]  # Value at the time when action is implemented.
+
     for y in ProjectedChanges['Year']:
         BaU = BaUData[Category].loc[y]
         if y < AmbitionStart:
@@ -114,6 +134,15 @@ def Projections(BaUData, Category, Ambition_Definitions, Level, AmbitionSpeed, A
     return ProjectedChanges
 
 def Shares(Data, ):
+    """
+    Translates absolute values into shares of the total, across the given categories (columns).
+
+    Args:
+        Data (dataframe): Dataframe containing raw data to be transformed into percentages. 
+
+    Returns:
+        dataframe: Dataframe containing percentage shares of each category across the given set of columns. 
+    """
     Total = Data.sum(axis = 1)
     Categories = list(Data.columns)
     Data_Shares = Data.copy(deep = True)
@@ -125,10 +154,11 @@ def Shares(Data, ):
 
 def CheckShareAmbLevels(Share_AmbLevels):
     """
-    Makes sure that the ambition levels of the different categories add up to 1.
+    Adds up the ambition levels of the different categories. Used to ensure that the defined share ambition levels for each
+    category add up to 1.
 
     Args:
-        Share_AmbLevels (_type_): _description_
+        Share_AmbLevels (dict): Dictionary containing percentage shares of each category.
     """
     Totals = {}
     for Level in range(1,5):
@@ -227,6 +257,31 @@ def Module_DemandShares(Data, Population, EmF,
                               SharesLever = 1, SharesSpeed = 5, SharesStart = 2035, 
                               ShareofEngineTypes = None, CalculatorTime_Range = list(range(2018, 2051)),
                               ExtDemand = None, OutputDemand = False, Details = False):
+    """
+    Wrapper function. 
+
+    Args:
+        Data (dataframe): _description_
+        Population (dataframe): Population pathways. 
+        EmF (dataframe): Emission factor pathways. 
+        Demand_AmbLevels (dict): _description_
+        Share_AmbLevels (dict): _description_
+       PopulationMode (str): _description_        Travel_Type (str, optional): _description_. Defaults to 'Non-Aviation'.
+        DemandLever (int, optional): _description_. Defaults to 1.
+        DemandSpeed (int, optional): _description_. Defaults to 10.
+        DemandStart (int, optional): _description_. Defaults to 2025.
+        SharesLever (int, optional): _description_. Defaults to 1.
+        SharesSpeed (int, optional): _description_. Defaults to 5.
+        SharesStart (int, optional): _description_. Defaults to 2035.
+        ShareofEngineTypes (_type_, optional): _description_. Defaults to None.
+        CalculatorTime_Range (_type_, optional): _description_. Defaults to list(range(2018, 2051)).
+        ExtDemand (_type_, optional): _description_. Defaults to None.
+        OutputDemand (bool, optional): _description_. Defaults to False.
+        Details (bool, optional): _description_. Defaults to False.
+
+    Returns:
+        _type_: _description_
+    """
     Data, BaU_ROC = CleanData(Data)
 
     Data_Shares = Shares(Data)   # Transform data into share % of modes, kept in columns
@@ -289,3 +344,4 @@ def Module_DemandShares(Data, Population, EmF,
 def JSONtoDF(Var):
     Dataframe = pd.read_json(io.StringIO(Var), orient = 'split')
     return Dataframe
+
