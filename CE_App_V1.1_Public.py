@@ -157,11 +157,11 @@ def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
 
 
 #%% FIGURE GENERATORS
-def CreateFigure_Categorical(CategoriesData, FigTitle, xLabel, yLabel, yRange, xRange = [2019, 2030]):
+def CreateFigure_Categorical(CategoriesData, FigTitle, xLabel, yLabel, yRange, xRange = [2019, 2030], ChartType = 'Line'):
     Data = gf.JSONtoDF(CategoriesData)
     Categories = list(Data.columns)
 
-    if type == 'Area':
+    if ChartType == 'Area':
         fig = px.area(Data, y = Categories, 
                     title = FigTitle,
                     labels = {'value':yLabel, 'index': xLabel}, range_y=yRange, range_x=xRange)
@@ -383,7 +383,7 @@ DOM_Data = Generalised_TravelModule('Domestic',DOM_Demand_Lever, DOM_Demand_Spee
 
 
 # ---------- Generate figures
-Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500])
+Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
 Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data, DOM_Data)
 Figure_LH = Figure_LongHaul_Classes(LH_Data)
 Figure_SH = Figure_ShortHaul_Classes(SH_Data)
