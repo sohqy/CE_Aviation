@@ -349,7 +349,7 @@ Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(Total_Data)
 Figure_LH = CreateFigure_Categorical(LH_Data, 'Long haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,8.1e5] )
 Figure_SH = CreateFigure_Categorical(SH_Data, 'Short haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
 Figure_DOM = CreateFigure_Categorical(DOM_Data, 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
-Figure_FTE = Figure_FTE_Emissions(LH_Data, SH_Data, DOM_Data, Population)
+Figure_FTE = Figure_FTE_Emissions(Total_Data, Population)
 
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
 with Body_Column:
