@@ -53,7 +53,7 @@ Dom_Share_AmbLevels = {
     'Unknown':                  {1: 0.002, 2: 0.001, 3: 0.000, 4: 0.0},
 }
 
-#%%
+#%% CALCULATION MODULES.
 
 def Travel_EmissionFactors():
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/TravelEmissionFactors_2019Start.csv'
@@ -155,6 +155,25 @@ def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
 
     return ProjectedChanges.to_json(date_format='iso', orient='split')
 
+def Sum_TravelEmissions(LH_Emissions, SH_Emissions, DOM_Emissions):
+    LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
+    LH_Total = LHAviationEmissions.sum(axis = 1) / 1000
+    LH_Total.rename('Long haul travel', inplace=True)
+
+    SHAviationEmissions = pd.read_json(io.StringIO(SH_Emissions), orient = 'split')
+    SH_Total = SHAviationEmissions.sum(axis = 1) / 1000
+    SH_Total.rename('Short haul travel', inplace=True)
+
+    DomAviationEmissions = pd.read_json(io.StringIO(DOM_Emissions), orient = 'split')
+    Dom_Total = DomAviationEmissions.sum(axis = 1) / 1000
+    Dom_Total.rename('Short haul travel', inplace=True)
+
+    Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, 'Domestic':Dom_Total })
+    Totals['Total aviation emissions'] = LH_Total + SH_Total + Dom_Total
+
+    return Totals.to_json(date_format='iso', orient='split')
+
+
 
 #%% FIGURE GENERATORS
 def CreateFigure_Categorical(CategoriesData, FigTitle, xLabel, yLabel, yRange, xRange = [2019, 2030], ChartType = 'Line'):
@@ -172,32 +191,21 @@ def CreateFigure_Categorical(CategoriesData, FigTitle, xLabel, yLabel, yRange, x
     return fig
 
 
-def Figure_Total_Overview(LH_Emissions, SH_Emissions, DOM_Emissions):
-    
-    LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
-    LH_Total = LHAviationEmissions.sum(axis = 1) / 1000
-    LH_Total.rename('Long haul travel', inplace=True)
+def Figure_Total_Overview(TotalEmissions):
 
-    SHAviationEmissions = pd.read_json(io.StringIO(SH_Emissions), orient = 'split')
-    SH_Total = SHAviationEmissions.sum(axis = 1) / 1000
-    SH_Total.rename('Short haul travel', inplace=True)
+    Total_AviationEmissions = gf.JSONtoDF(TotalEmissions)
+    All_Emissions = Total_AviationEmissions['Total aviation emissions']
+    Categorical_Totals = Total_AviationEmissions[['Long Haul', 'Short Haul', 'Domestic']]
 
-    DomAviationEmissions = pd.read_json(io.StringIO(DOM_Emissions), orient = 'split')
-    Dom_Total = DomAviationEmissions.sum(axis = 1) / 1000
-    Dom_Total.rename('Short haul travel', inplace=True)
-
-    TotalEmissions = LH_Total + SH_Total + Dom_Total
-    TotalEmissions.rename('Total aviation emissions', inplace=True)
-    Cumulative_Emissions = TotalEmissions.cumsum()
+    Cumulative_Emissions = All_Emissions.cumsum()
 
     fig_Cumulative = px.area(Cumulative_Emissions, 
                   labels = {'value':'Cumulative Emissions (tCO2e)'}, range_y=[-1,3.5e4], range_x=[2019, 2030])
 
-    Baseline_Emission = TotalEmissions.loc[2022]
-
-    Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, 'Domestic':Dom_Total })
-    fig = px.area(Totals, range_y=[-1, 1300], labels = {'value':'Emissions (tCO2e)', 'index':''}, range_x=[2019, 2030])
-    fig.add_traces(px.line(TotalEmissions, markers=True, color_discrete_sequence= ['black']).data)
+    Baseline_Emission = All_Emissions.loc[2022]
+    
+    fig = px.area(Categorical_Totals, range_y=[-1, 1300], labels = {'value':'Emissions (tCO2e)', 'index':''}, range_x=[2019, 2030])
+    fig.add_traces(px.line(All_Emissions, markers=True, color_discrete_sequence= ['black']).data)
     fig.add_hline(y=Baseline_Emission, line_width=2, line_dash="dash", 
         line_color="#ff8c00",  annotation_text="2022/23 Emissions (Baseline)", annotation_font_color="#ff8c00" )
     # fig.add_hline(y = 0.75 * Baseline_Emission, line_width = 2, line_color = '#008080', annotation_font_color="#008080",  
@@ -342,11 +350,11 @@ EmF = Travel_EmissionFactors()
 LH_Data = Generalised_TravelModule('LongHaul', LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
 SH_Data = Generalised_TravelModule('ShortHaul', SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
 DOM_Data = Generalised_TravelModule('Domestic',DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
-
+Total_Data = Sum_TravelEmissions(LH_Data, SH_Data, DOM_Data)
 
 # ---------- Generate figures
 Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
-Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(LH_Data, SH_Data, DOM_Data)
+Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(Total_Data)
 Figure_LH = CreateFigure_Categorical(LH_Data, 'Long haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,8.1e5] )
 Figure_SH = CreateFigure_Categorical(SH_Data, 'Short haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
 Figure_DOM = CreateFigure_Categorical(DOM_Data, 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
