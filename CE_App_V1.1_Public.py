@@ -192,7 +192,6 @@ def CreateFigure_Categorical(CategoriesData, FigTitle, xLabel, yLabel, yRange, x
 
 
 def Figure_Total_Overview(TotalEmissions):
-
     Total_AviationEmissions = gf.JSONtoDF(TotalEmissions)
     All_Emissions = Total_AviationEmissions['Total aviation emissions']
     Categorical_Totals = Total_AviationEmissions[['Long Haul', 'Short Haul', 'Domestic']]
@@ -213,24 +212,16 @@ def Figure_Total_Overview(TotalEmissions):
     fig.add_vline(x=2023, line_width=2, line_dash="dash", line_color="#0000cd")
     return fig, fig_Cumulative
 
-def Figure_FTE_Emissions(LH_Emissions, SH_Emissions, DOM_Emissions, Population):
-    LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
-    LH_Total = LHAviationEmissions.sum(axis = 1) / 1000
+def Figure_FTE_Emissions(TotalEmissions, Population):
+    Total_AviationEmissions = gf.JSONtoDF(TotalEmissions)
+    All_Emissions = Total_AviationEmissions['Total aviation emissions']
 
-    SHAviationEmissions = pd.read_json(io.StringIO(SH_Emissions), orient = 'split')
-    SH_Total = SHAviationEmissions.sum(axis = 1) / 1000
-
-    DomAviationEmissions = pd.read_json(io.StringIO(DOM_Emissions), orient = 'split')
-    Dom_Total = DomAviationEmissions.sum(axis = 1) / 1000
-
-    TotalEmissions = LH_Total + SH_Total + Dom_Total
-    TotalEmissions.rename('Total aviation emissions', inplace=True)
-
+    # Sum over all CE population. Should this be just over staff/PG? 
     Population = pd.read_json(io.StringIO(Population), orient = 'split')
     Population_Total = Population.sum(axis = 1) 
-    Emissions_FTE = TotalEmissions/Population_Total
+    Emissions_FTE = All_Emissions/Population_Total
 
-    # 
+    # Key targets and values.
     Key_EmissionsFTE_Values = pd.DataFrame({'Baseline (2022)': Emissions_FTE.loc[2022], 'Target': Emissions_FTE.loc[2022] * 0.75, 'Current Selection (2026)': Emissions_FTE.loc[2026]}, index = [0])
     fig = px.bar(Key_EmissionsFTE_Values.T, labels = {'value':'Emissions per person (tCO2e/person)', 'index':''},
                   range_y=[-1,1], text_auto='.3f')
