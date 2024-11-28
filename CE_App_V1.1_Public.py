@@ -156,21 +156,26 @@ def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
 
     return ProjectedChanges.to_json(date_format='iso', orient='split')
 
-def Sum_TravelEmissions(LH_Emissions, SH_Emissions, DOM_Emissions):
+def Sum_TravelEmissions(LH_Emissions, SH_Emissions, DOM_Emissions, Mode = 'Emissions'):
+    if Mode == 'Emissions':
+        Factor = 1000   # Emissions were calculated in kmCO2e, but presented in tCO2e
+    else:
+        Factor = 1      # do not convert Psg KM
+
     LHAviationEmissions = pd.read_json(io.StringIO(LH_Emissions), orient = 'split')
-    LH_Total = LHAviationEmissions.sum(axis = 1) / 1000
+    LH_Total = LHAviationEmissions.sum(axis = 1) / Factor
     LH_Total.rename('Long haul travel', inplace=True)
 
     SHAviationEmissions = pd.read_json(io.StringIO(SH_Emissions), orient = 'split')
-    SH_Total = SHAviationEmissions.sum(axis = 1) / 1000
+    SH_Total = SHAviationEmissions.sum(axis = 1) / Factor
     SH_Total.rename('Short haul travel', inplace=True)
 
     DomAviationEmissions = pd.read_json(io.StringIO(DOM_Emissions), orient = 'split')
-    Dom_Total = DomAviationEmissions.sum(axis = 1) / 1000
+    Dom_Total = DomAviationEmissions.sum(axis = 1) / Factor
     Dom_Total.rename('Short haul travel', inplace=True)
 
     Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, 'Domestic':Dom_Total })
-    Totals['Total aviation emissions'] = LH_Total + SH_Total + Dom_Total
+    Totals['Tota'] = LH_Total + SH_Total + Dom_Total
 
     return Totals.to_json(date_format='iso', orient='split')
 
@@ -353,7 +358,7 @@ Figure_SH = CreateFigure_Categorical(SH_Data['Emissions'], 'Short haul aviation 
 Figure_DOM = CreateFigure_Categorical(DOM_Data['Emissions'], 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
 Figure_FTE = Figure_FTE_Emissions(Total_Emissions, Population)
 
-Figure_Demand = CreateFigure_Categorical(Total_Demand, 'Demand', '', 'Psg KM', [-1,6e3])
+Figure_Demand = CreateFigure_Categorical(Total_Demand, 'Total Demand', '', 'Psg KM', [-1,6e5])
 
 # ---------- Page body layout
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
