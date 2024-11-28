@@ -88,15 +88,15 @@ def Projections(BaUData, Category, Ambition_Definitions, Level, AmbitionSpeed, A
         BaUData (dataframe): Business as usual data that includes the given category of interest.
         Category (str): The category of interest in this calculation. 
         Ambition_Definitions (dict): Definition of each level of ambition for the given category.
-        Level (_type_): _description_
-        AmbitionSpeed (_type_): _description_
-        AmbitionStart (_type_): _description_
-        ProjectedChanges (_type_): _description_
-        BaseYear (int, optional): _description_. Defaults to 2018.
-        AmbitionsMode (str, optional): _description_. Defaults to 'Percentage'.
+        Level (float): Selected level of ambition for the category.
+        AmbitionSpeed (float): The number of years in which action is to be taken. 
+        AmbitionStart (int): The year in which action begins. 
+        ProjectedChanges (dataframe): The dataframe which stores the projected pathways. 
+        BaseYear (int, optional): The year in which changes are in reference to. Defaults to 2018.
+        AmbitionsMode (str, optional): Signifies whether the ambition levels are defined in proportional or absolute terms. Defaults to 'Percentage'.
 
     Returns:
-        _type_: _description_
+        dataframe: The dataframe which stores the projected pathways. 
     """
     # Define base year and set up ambition bounds. 
     BaseYear_Value = BaUData[Category].loc[BaseYear]
@@ -133,7 +133,7 @@ def Projections(BaUData, Category, Ambition_Definitions, Level, AmbitionSpeed, A
 
     return ProjectedChanges
 
-def Shares(Data, ):
+def Shares(Data):
     """
     Translates absolute values into shares of the total, across the given categories (columns).
 
@@ -143,14 +143,13 @@ def Shares(Data, ):
     Returns:
         dataframe: Dataframe containing percentage shares of each category across the given set of columns. 
     """
-    Total = Data.sum(axis = 1)
+    Total = Data.sum(axis = 1)          # Find total from which to calculate shares from 
     Categories = list(Data.columns)
     Data_Shares = Data.copy(deep = True)
     for Category in Categories:
         Data_Shares[Category] = Data[Category]/Total
     Data_Shares['Total'] = Total
     return Data_Shares
-
 
 def CheckShareAmbLevels(Share_AmbLevels):
     """
@@ -203,6 +202,18 @@ def Map_ModeEngine(Mode, ActivityByMode, Activity_ModeEngine, EngineShare, AllMo
         AllModeEngines.append(m)
     
 def Calc_TravelEmissions(AllModeEngines, Activity_ModeEngine,  EmFactors, CalculatorTime_Range = list(range(2018, 2051))):
+    """
+    _summary_
+
+    Args:
+        AllModeEngines (_type_): _description_
+        Activity_ModeEngine (_type_): _description_
+        EmFactors (_type_): _description_
+        CalculatorTime_Range (_type_, optional): _description_. Defaults to list(range(2018, 2051)).
+
+    Returns:
+        _type_: _description_
+    """
     for mode in ['Bicycle', 'Walking', 'Other', 'carH2']:
         if mode in AllModeEngines:
             AllModeEngines.remove(mode)

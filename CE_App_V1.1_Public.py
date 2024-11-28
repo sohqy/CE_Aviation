@@ -134,7 +134,7 @@ def Generalised_TravelModule(HaulType, Demand_AmbLevels, Share_AmbLevels, Demand
     AllEmissions = gf.Aviation_Emissions(Categories, shorthandHaul, EmFactors, ActivityByMode)
     
     if Return_Demand is True:
-        return ActivityByMode.to_json(date_format = 'iso', orient = 'split')
+        return {'Demand': ActivityByMode.to_json(date_format = 'iso', orient = 'split'), 'Emissions':AllEmissions.to_json(date_format = 'iso', orient = 'split')}
     else:
         return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
@@ -346,7 +346,7 @@ SH_Data = Generalised_TravelModule('ShortHaul', SH_Demand_AmbLevels, SH_Share_Am
 DOM_Data = Generalised_TravelModule('Domestic', Dom_Demand_AmbLevels, Dom_Share_AmbLevels, DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
 Total_Data = Sum_TravelEmissions(LH_Data, SH_Data, DOM_Data)
 
-Travel_Demand = Generalised_TravelModule('LongHaul', LH_Demand_AmbLevels, LH_Share_AmbLevels, LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
+Travel_Demand = Generalised_TravelModule('LongHaul', LH_Demand_AmbLevels, LH_Share_AmbLevels, LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)['Demand']
 
 # ---------- Generate figures
 Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
@@ -361,17 +361,17 @@ Figure_Demand = CreateFigure_Categorical(Travel_Demand, 'Demand', '', 'Psg KM', 
 # ---------- Page body layout
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
 with Body_Column:
-    Overview_Page, Details_Page = st.tabs(["Overview", "Emissions by categories",])
+    Overview_Page, Details_Page, Pop_Page = st.tabs(["Overview", "Emissions by categories", "Population and Demand"])
     Overview_Page.plotly_chart(Figure_Emissions, theme = 'streamlit')
     Overview_Page.plotly_chart(Figure_FTE, theme = 'streamlit')
     Overview_Page.plotly_chart(Figure_Cumulative, theme = 'streamlit')
 
-    Details_Page.plotly_chart(Figure_Population, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_LH, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_SH, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_DOM, theme = 'streamlit')
-    
-    Details_Page.plotly_chart(Figure_Demand, theme = 'streamlit')
+
+    Pop_Page.plotly_chart(Figure_Population, theme = 'streamlit')
+    Pop_Page.plotly_chart(Figure_Demand, theme = 'streamlit')
 
 Summary_Column.write(Generate_Lever_Summary(LH_Demand_Lever, SH_Demand_Lever, DOM_Demand_Lever,
                                             LH_Class_Lever, SH_Class_Lever, DOM_Class_Lever))
