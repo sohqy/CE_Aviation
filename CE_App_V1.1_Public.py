@@ -92,7 +92,7 @@ def Travel_EmissionFactors():
     return GHG_EmF.to_json(date_format = 'iso', orient = 'split')
 
 def Generalised_TravelModule(HaulType, Demand_AmbLevels, Share_AmbLevels, DemandLever, DemandSpeed, DemandStart, 
-              ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor, Return_Demand = False):
+              ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
     if HaulType == 'LongHaul':
         shorthandHaul = 'lH'
     else:
@@ -133,10 +133,8 @@ def Generalised_TravelModule(HaulType, Demand_AmbLevels, Share_AmbLevels, Demand
 
     AllEmissions = gf.Aviation_Emissions(Categories, shorthandHaul, EmFactors, ActivityByMode)
     
-    if Return_Demand is True:
-        return {'Demand': ActivityByMode.to_json(date_format = 'iso', orient = 'split'), 'Emissions':AllEmissions.to_json(date_format = 'iso', orient = 'split')}
-    else:
-        return AllEmissions.to_json(date_format = 'iso', orient = 'split')
+    return {'Demand': ActivityByMode.to_json(date_format = 'iso', orient = 'split'), 'Emissions':AllEmissions.to_json(date_format = 'iso', orient = 'split')}
+
 
 def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
@@ -344,20 +342,18 @@ EmF = Travel_EmissionFactors()
 LH_Data = Generalised_TravelModule('LongHaul',LH_Demand_AmbLevels, LH_Share_AmbLevels, LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
 SH_Data = Generalised_TravelModule('ShortHaul', SH_Demand_AmbLevels, SH_Share_AmbLevels, SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
 DOM_Data = Generalised_TravelModule('Domestic', Dom_Demand_AmbLevels, Dom_Share_AmbLevels, DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
-Total_Data = Sum_TravelEmissions(LH_Data, SH_Data, DOM_Data)
-
-Travel_Demand = Generalised_TravelModule('LongHaul', LH_Demand_AmbLevels, LH_Share_AmbLevels, LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage, True)
-Travel_Demand = Travel_Demand['Demand']
+Total_Emissions = Sum_TravelEmissions(LH_Data['Emissions'], SH_Data['Emissions'], DOM_Data['Emissions'])
+Total_Demand = Sum_TravelEmissions(LH_Data['Demand'], SH_Data['Demand'], DOM_Data['Demand'])
 
 # ---------- Generate figures
 Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
 Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(Total_Data)
-Figure_LH = CreateFigure_Categorical(LH_Data, 'Long haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,8.1e5] )
-Figure_SH = CreateFigure_Categorical(SH_Data, 'Short haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
-Figure_DOM = CreateFigure_Categorical(DOM_Data, 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
-Figure_FTE = Figure_FTE_Emissions(Total_Data, Population)
+Figure_LH = CreateFigure_Categorical(LH_Data['Emissions'], 'Long haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,8.1e5] )
+Figure_SH = CreateFigure_Categorical(SH_Data['Emissions'], 'Short haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
+Figure_DOM = CreateFigure_Categorical(DOM_Data['Emissions'], 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
+Figure_FTE = Figure_FTE_Emissions(Total_Emissions, Population)
 
-Figure_Demand = CreateFigure_Categorical(Travel_Demand, 'Demand', '', 'Psg KM', [-1,6e3])
+Figure_Demand = CreateFigure_Categorical(Total_Demand, 'Demand', '', 'Psg KM', [-1,6e3])
 
 # ---------- Page body layout
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
