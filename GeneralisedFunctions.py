@@ -82,12 +82,12 @@ def BaU_Pathways(Data, Category, BaU_ROC = None, CalculatorTime_Range = list(ran
 def Projections(BaUData, Category, Ambition_Definitions, Level, AmbitionSpeed, AmbitionStart, ProjectedChanges, 
                 BaseYear = 2018, AmbitionsMode = 'Percentage'):    
     """
-    _summary_
+    Calculates a projected pathway for the given category following the given ambition level, speed, and start year. 
 
     Args:
-        BaUData (_type_): _description_
-        Category (_type_): _description_
-        Ambition_Definitions (_type_): _description_
+        BaUData (dataframe): Business as usual data that includes the given category of interest.
+        Category (str): The category of interest in this calculation. 
+        Ambition_Definitions (dict): Definition of each level of ambition for the given category.
         Level (_type_): _description_
         AmbitionSpeed (_type_): _description_
         AmbitionStart (_type_): _description_
@@ -165,8 +165,18 @@ def CheckShareAmbLevels(Share_AmbLevels):
         Totals[Level] = sum([Share_AmbLevels[Category][Level] for Category in Share_AmbLevels.keys()]) 
     return Totals
 
-
+### TRAVEL SPECIFIC FUNCTIONS 
 def Map_ModeEngine(Mode, ActivityByMode, Activity_ModeEngine, EngineShare, AllModeEngines):
+    """
+    Map possible engine types to each mode of transport and splits the relevant transport activity by the given engine share.
+
+    Args:
+        Mode (str): Mode of transport. 
+        ActivityByMode (dataframe): Activity levels (in km) of each transport mode. 
+        Activity_ModeEngine (dataframe): dataframe that is to be used to store the disagregated activity levels by engine
+        EngineShare (dataframe): Share of each engine type by mode. 
+        AllModeEngines (list): List of modes and engines considered in the calculation.
+    """
     if Mode in ['Car', 'Bus']:
         Engines = ['E', 'H2', 'PHEV', 'IC']
         ModeEngine = [Mode.lower() + m for m in Engines]
@@ -341,7 +351,20 @@ def Module_DemandShares(Data, Population, EmF,
     else:
         return AllEmissions
 
+### OTHER FUNCTIONS 
 def JSONtoDF(Var):
+    """
+    Wrapper for reading json data, which are output from the calculation modules, into dataframes to be manipulated. 
+
+    Args:
+        Var (obj): variable storing the json representation of the desired dataframe.
+
+    Returns:
+        dataframe: information from the json encoding, in a dataframe format. 
+    """
     Dataframe = pd.read_json(io.StringIO(Var), orient = 'split')
     return Dataframe
 
+
+#%% Thoughts for further modules 
+# building demand - can probably be implemented similarly to travel demand mods. 

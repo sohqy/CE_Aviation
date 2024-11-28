@@ -91,8 +91,8 @@ def Travel_EmissionFactors():
 
     return GHG_EmF.to_json(date_format = 'iso', orient = 'split')
 
-def Generalised_TravelModule(HaulType, DemandLever, DemandSpeed, DemandStart, 
-              ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor):
+def Generalised_TravelModule(HaulType, Demand_AmbLevels, Share_AmbLevels, DemandLever, DemandSpeed, DemandStart, 
+              ClassLever, ClassSpeed, ClassStart, EmF, LeakageFactor, Return_Demand = False):
     if HaulType == 'LongHaul':
         shorthandHaul = 'lH'
     else:
@@ -109,7 +109,7 @@ def Generalised_TravelModule(HaulType, DemandLever, DemandSpeed, DemandStart,
     ProjectedChanges = pd.DataFrame({'Year':CalculatorTime_Range})
 
     BaU_Demand = gf.BaU_Pathways(Data_Shares, 'Total')          # Unit demand.
-    gf.Projections(BaU_Demand, 'Total', LH_Demand_AmbLevels, 
+    gf.Projections(BaU_Demand, 'Total', Demand_AmbLevels, 
                    DemandLever, DemandSpeed, DemandStart, ProjectedChanges, BaseYear=2022, )
     
     ProjectedDemand = pd.DataFrame({'Year':CalculatorTime_Range})
@@ -125,7 +125,7 @@ def Generalised_TravelModule(HaulType, DemandLever, DemandSpeed, DemandStart,
     Activity_ModeEngine = pd.DataFrame({'Year':CalculatorTime_Range})
     for Category in Categories:
         BaUData = gf.BaU_Pathways(Data_Shares, Category)
-        gf.Projections(BaUData, Category, LH_Share_AmbLevels[Category], ClassLever, ClassSpeed, ClassStart, 
+        gf.Projections(BaUData, Category, Share_AmbLevels[Category], ClassLever, ClassSpeed, ClassStart, 
                        ProjectedShares, AmbitionsMode='Absolute', BaseYear=2022,)
         ActivityByMode[Category] = ProjectedDemand['Total'] * ProjectedShares[Category]
     Activity_ModeEngine.set_index('Year', inplace = True)
@@ -133,7 +133,10 @@ def Generalised_TravelModule(HaulType, DemandLever, DemandSpeed, DemandStart,
 
     AllEmissions = gf.Aviation_Emissions(Categories, shorthandHaul, EmFactors, ActivityByMode)
     
-    return AllEmissions.to_json(date_format = 'iso', orient = 'split')
+    if Return_Demand is True:
+        return ActivityByMode.to_json(date_format = 'iso', orient = 'split')
+    else:
+        return AllEmissions.to_json(date_format = 'iso', orient = 'split')
 
 def Population_Module(PopulationLever, PopulationSpeed, PopulationStart):
     Data_URL = 'https://raw.githubusercontent.com/sohqy/CE_Aviation/refs/heads/main/CE_Data_Public.xlsx'
@@ -254,7 +257,7 @@ def Generate_Lever_Summary(LongHaul_Demand, ShortHaul_Demand, Domestic_Demand,
     LH_ShareSelection = Return_Selected_Ambitions(LH_Share_AmbLevels, LongHaul_Share)
 
     SH_ShareSelection = Return_Selected_Ambitions(SH_Share_AmbLevels, ShortHaul_Share)
-    Dom_ShareSelection = Return_Selected_Ambitions(LH_Share_AmbLevels, Domestic_Share)
+    Dom_ShareSelection = Return_Selected_Ambitions(Dom_Share_AmbLevels, Domestic_Share)
 
     Summary = ' ### Lever selection summary \n\n' 
     Summary += 'Long haul demand {} by {:.2f}% \n\n'.format(Changes_Text(LH_DemandSelection), abs(LH_DemandSelection))
@@ -338,10 +341,12 @@ Population_Start = st.sidebar.number_input(label = 'Population change start', mi
 # ---------- Generate data 
 Population = Population_Module(Population_Change, Population_Speed, Population_Start)
 EmF = Travel_EmissionFactors()
-LH_Data = Generalised_TravelModule('LongHaul', LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
-SH_Data = Generalised_TravelModule('ShortHaul', SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
-DOM_Data = Generalised_TravelModule('Domestic',DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
+LH_Data = Generalised_TravelModule('LongHaul',LH_Demand_AmbLevels, LH_Share_AmbLevels, LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
+SH_Data = Generalised_TravelModule('ShortHaul', SH_Demand_AmbLevels, SH_Share_AmbLevels, SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
+DOM_Data = Generalised_TravelModule('Domestic', Dom_Demand_AmbLevels, Dom_Share_AmbLevels, DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
 Total_Data = Sum_TravelEmissions(LH_Data, SH_Data, DOM_Data)
+
+Travel_Demand = Generalised_TravelModule('LongHaul', LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
 
 # ---------- Generate figures
 Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
@@ -351,6 +356,9 @@ Figure_SH = CreateFigure_Categorical(SH_Data, 'Short haul aviation emissions', '
 Figure_DOM = CreateFigure_Categorical(DOM_Data, 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
 Figure_FTE = Figure_FTE_Emissions(Total_Data, Population)
 
+Figure_Demand = CreateFigure_Categorical(Travel_Demand, 'Demand', '', 'Psg KM')
+
+# ---------- Page body layout
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
 with Body_Column:
     Overview_Page, Details_Page = st.tabs(["Overview", "Emissions by categories",])
@@ -362,6 +370,8 @@ with Body_Column:
     Details_Page.plotly_chart(Figure_LH, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_SH, theme = 'streamlit')
     Details_Page.plotly_chart(Figure_DOM, theme = 'streamlit')
+    
+    Details_Page.plotly_chart(Figure_Demand, theme = 'streamlit')
 
 Summary_Column.write(Generate_Lever_Summary(LH_Demand_Lever, SH_Demand_Lever, DOM_Demand_Lever,
                                             LH_Class_Lever, SH_Class_Lever, DOM_Class_Lever))
