@@ -356,7 +356,7 @@ Figure_SH = CreateFigure_Categorical(SH_Data, 'Short haul aviation emissions', '
 Figure_DOM = CreateFigure_Categorical(DOM_Data, 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
 Figure_FTE = Figure_FTE_Emissions(Total_Data, Population)
 
-Figure_Demand = CreateFigure_Categorical(Travel_Demand, 'Demand', '', 'Psg KM')
+Figure_Demand = CreateFigure_Categorical(Travel_Demand, 'Demand', '', 'Psg KM', [-1,6e3])
 
 # ---------- Page body layout
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
