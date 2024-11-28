@@ -175,7 +175,7 @@ def Sum_TravelEmissions(LH_Emissions, SH_Emissions, DOM_Emissions, Mode = 'Emiss
     Dom_Total.rename('Short haul travel', inplace=True)
 
     Totals = pd.DataFrame({'Long Haul': LH_Total, 'Short Haul': SH_Total, 'Domestic':Dom_Total })
-    Totals['Tota'] = LH_Total + SH_Total + Dom_Total
+    Totals['Total'] = LH_Total + SH_Total + Dom_Total
 
     return Totals.to_json(date_format='iso', orient='split')
 
@@ -199,7 +199,7 @@ def CreateFigure_Categorical(CategoriesData, FigTitle, xLabel, yLabel, yRange, x
 
 def Figure_Total_Overview(TotalEmissions):
     Total_AviationEmissions = gf.JSONtoDF(TotalEmissions)
-    All_Emissions = Total_AviationEmissions['Total aviation emissions']
+    All_Emissions = Total_AviationEmissions['Total']
     Categorical_Totals = Total_AviationEmissions[['Long Haul', 'Short Haul', 'Domestic']]
 
     Cumulative_Emissions = All_Emissions.cumsum()
@@ -220,7 +220,7 @@ def Figure_Total_Overview(TotalEmissions):
 
 def Figure_FTE_Emissions(TotalEmissions, Population):
     Total_AviationEmissions = gf.JSONtoDF(TotalEmissions)
-    All_Emissions = Total_AviationEmissions['Total aviation emissions']
+    All_Emissions = Total_AviationEmissions['Total']
 
     # Sum over all CE population. Should this be just over staff/PG? 
     Population = pd.read_json(io.StringIO(Population), orient = 'split')
@@ -348,7 +348,7 @@ LH_Data = Generalised_TravelModule('LongHaul',LH_Demand_AmbLevels, LH_Share_AmbL
 SH_Data = Generalised_TravelModule('ShortHaul', SH_Demand_AmbLevels, SH_Share_AmbLevels, SH_Demand_Lever, SH_Demand_Speed, SH_Demand_Start, SH_Class_Lever, SH_Class_Speed, SH_Class_Start, EmF, SH_Leakage)
 DOM_Data = Generalised_TravelModule('Domestic', Dom_Demand_AmbLevels, Dom_Share_AmbLevels, DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
 Total_Emissions = Sum_TravelEmissions(LH_Data['Emissions'], SH_Data['Emissions'], DOM_Data['Emissions'])
-Total_Demand = Sum_TravelEmissions(LH_Data['Demand'], SH_Data['Demand'], DOM_Data['Demand'])
+Total_Demand = Sum_TravelEmissions(LH_Data['Demand'], SH_Data['Demand'], DOM_Data['Demand'], Mode = 'Demand')
 
 # ---------- Generate figures
 Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
