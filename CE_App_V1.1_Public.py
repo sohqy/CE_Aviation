@@ -230,7 +230,7 @@ def Figure_FTE_Emissions(TotalEmissions, Population):
     # Key targets and values.
     Key_EmissionsFTE_Values = pd.DataFrame({'Baseline (2022)': Emissions_FTE.loc[2022], 'Target': Emissions_FTE.loc[2022] * 0.75, 'Current Selection (2026)': Emissions_FTE.loc[2026]}, index = [0])
     fig = px.bar(Key_EmissionsFTE_Values.T, labels = {'value':'Emissions per person (tCO2e/person)', 'index':''},
-                  range_y=[-1,1], text_auto='.3f')
+                  range_y=[-0.1,1], text_auto='.3f')
     fig.update(layout_showlegend=False)
     return fig
 
@@ -358,7 +358,7 @@ Figure_SH = CreateFigure_Categorical(SH_Data['Emissions'], 'Short haul aviation 
 Figure_DOM = CreateFigure_Categorical(DOM_Data['Emissions'], 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
 Figure_FTE = Figure_FTE_Emissions(Total_Emissions, Population)
 
-Figure_Demand = CreateFigure_Categorical(Total_Demand, 'Total Demand', '', 'Psg KM', [-1,6e5])
+Figure_Demand = CreateFigure_Categorical(Total_Demand, 'Total Demand', '', 'Psg KM', [-1,4.3e6])
 
 # ---------- Page body layout
 Body_Column, Summary_Column = st.columns([0.7, 0.3], gap = 'large')
