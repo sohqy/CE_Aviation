@@ -346,7 +346,7 @@ SH_Data = Generalised_TravelModule('ShortHaul', SH_Demand_AmbLevels, SH_Share_Am
 DOM_Data = Generalised_TravelModule('Domestic', Dom_Demand_AmbLevels, Dom_Share_AmbLevels, DOM_Demand_Lever, DOM_Demand_Speed, DOM_Demand_Start, DOM_Class_Lever, DOM_Class_Speed, DOM_Class_Start, EmF, DOM_Leakage)
 Total_Data = Sum_TravelEmissions(LH_Data, SH_Data, DOM_Data)
 
-Travel_Demand = Generalised_TravelModule('LongHaul', LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
+Travel_Demand = Generalised_TravelModule('LongHaul', LH_Demand_AmbLevels, LH_Share_AmbLevels, LH_Demand_Lever, LH_Demand_Speed, LH_Demand_Start, LH_Class_Lever, LH_Class_Speed, LH_Class_Start, EmF, LH_Leakage)
 
 # ---------- Generate figures
 Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
