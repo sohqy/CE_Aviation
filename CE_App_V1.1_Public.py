@@ -347,7 +347,7 @@ Total_Demand = Sum_TravelEmissions(LH_Data['Demand'], SH_Data['Demand'], DOM_Dat
 
 # ---------- Generate figures
 Figure_Population = CreateFigure_Categorical(Population, 'Population', '', 'Persons', [-1, 1500], ChartType='Area')
-Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(Total_Data)
+Figure_Emissions, Figure_Cumulative = Figure_Total_Overview(Total_Emissions)
 Figure_LH = CreateFigure_Categorical(LH_Data['Emissions'], 'Long haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,8.1e5] )
 Figure_SH = CreateFigure_Categorical(SH_Data['Emissions'], 'Short haul aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
 Figure_DOM = CreateFigure_Categorical(DOM_Data['Emissions'], 'Domestic aviation emissions', '', 'Emissions (kgCO2e)', [-1,6e3] )
